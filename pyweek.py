@@ -4,7 +4,7 @@ import random
 import sys
 
 from player import Player
-from machines import Conveyor
+from machines import Conveyor, OreChute
 
 HEIGHT = 600
 WIDTH = 800
@@ -30,12 +30,14 @@ class Game(object):
         # indexed by position in the grid, (x,y)
         # conveyor images are 70 x 70, so that's our grid
         for i in range(10):
-            x = random.randint(0, self.GRID_WIDTH)
-            y = random.randint(0, self.GRID_HEIGHT)
-            self.machines[(x,y)] = Conveyor(self, x, y)
+            x = random.randint(1, self.GRID_WIDTH)
+            y = random.randint(1, self.GRID_HEIGHT)
+            self.machines[(x,y)] = Conveyor(self, x, y, anchor=(35,11))
     
-    def point(self, pos):
-        screen.draw.circle(pos, 5, (255,0,0))
+        self.machines[(0,5)] = OreChute(self, 0, 5, "copper_ingot", 5)
+        
+    def point(self, pos, color=(255,0,0)):
+        screen.draw.circle(pos, 5, color)
         
     def convert_to_grid(self, x, y):
         return (int(x / self.GRID_SIZE),
@@ -45,6 +47,7 @@ class Game(object):
         return (grid_x * self.GRID_SIZE,
                 grid_y * self.GRID_SIZE)
 
+print("Starting...")
 game = Game(HEIGHT, WIDTH)
 print("Game initialised")
 
@@ -55,13 +58,16 @@ def draw():
     for player in game.players.values():
         player.draw()
     for machine in game.machines.values():
+        if type(machine) is Conveyor:
+            machine.draw_item()
+    for machine in game.machines.values():
         machine.draw()
 
-def update():
+def update(dt):
     for player in game.players.values():
-        player.update()
+        player.update(dt)
     for machine in game.machines.values():
-        machine.update()
+        machine.update(dt)
 
 
 def on_joy_button_down(joy, button):

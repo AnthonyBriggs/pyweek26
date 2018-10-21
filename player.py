@@ -49,7 +49,7 @@ class Player(Actor):
         self.game.point(self.pos)
         
         
-    def update(self):
+    def update(self, dt):
         #print ("updating player", self.number)
         self.x += self.speed[0]
         self.y += self.speed[1]
@@ -78,15 +78,15 @@ class Player(Actor):
                 self.carrying.x = self.x - 40
             else:
                 self.carrying.x = self.x + 40
-            self.carrying.y = self.y + 40
+            self.carrying.y = self.y + 20
     
     def calc_grid(self):
         # Player grid is centered on the sprite, so needs some hackery
         grid_size = self.game.GRID_SIZE
         if self.facing_left:
-            fudge = -grid_size * 0.5
+            fudge = -grid_size * 0.75
         else:
-            fudge = grid_size * 0.5
+            fudge = grid_size * 0.75
         return (int((self.x + fudge) / self.game.GRID_SIZE),
                 int((self.y + grid_size * 0.66) / self.game.GRID_SIZE))
     

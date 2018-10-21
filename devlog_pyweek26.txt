@@ -10,12 +10,28 @@ https://github.com/AnthonyBriggs/pyweek26
 
 comms:
 https://pyweek.org/messages/
+https://pyweek.org/latest/
 http://webchat.freenode.net/
 https://twitter.com/search?f=tweets&vertical=default&q=%23pyweek&src=typd
 
 reference:
 https://pygame-zero.readthedocs.io/en/stable/hooks.html
 https://pygame-zero.readthedocs.io/en/stable/builtins.html
+
+
+2018-10-21 8.59PM (T+10hrs)
+---------------------------
+
+Just fixed a few weird bugs and reworked how the conveyor belt works. Now instead of having three positions, it maintains a linear distance and updates it constantly, so that the items move smoothly. A couple of bug fixes later and it seems to work pretty well. The annoying one was forgetting to return True when a conveyer accepts an item, so it was pushing the same item along the belt 
+
+2018-10-21 5.50PM (T+nearly7hrs)
+-----------------------------
+
+Ok, so there are conveyor belts in the game now. They don't actually convey things, but you can pick them up and put them down with your alien. Spent a long time trying to tweak the UI to make it intuitive, but I'm still not 100% happy with it. Never mind, onwards, onwards - I'm sure it'll change a bit as the game goes on anyway.
+
+There's also multiplayer, so if you have multiple joysticks, the aliens can each have a conveyor of their own.
+
+And if anyone's testing this (I doubt it), at the moment there's a hack in the PygameZero joystick handlers to get around the numbering due to my Gamecube adapter. Let me know if you have trouble fixing it and I can help out :)
 
 
 2018-10-21 12.56PM (T+2hrs)
