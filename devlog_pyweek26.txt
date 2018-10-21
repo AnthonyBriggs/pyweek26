@@ -1,0 +1,96 @@
+
+Kenney fanclub devlog for Pyweek #26
+====================================
+
+Bookmarks
+---------
+code:
+https://pyweek.org/e/kenney_fanclub/
+https://github.com/AnthonyBriggs/pyweek26
+
+comms:
+https://pyweek.org/messages/
+http://webchat.freenode.net/
+https://twitter.com/search?f=tweets&vertical=default&q=%23pyweek&src=typd
+
+reference:
+https://pygame-zero.readthedocs.io/en/stable/hooks.html
+https://pygame-zero.readthedocs.io/en/stable/builtins.html
+
+
+2018-10-21 12.56PM (T+2hrs)
+---------------------------
+
+So, thinking about the industrial build things idea. Rough breakdown of early features (story backlog :) )
+    - Aliens move around on screen, add/remove them when pushing start button
+    - Parts on screen (ie. conveyors, machines), put into a grid.
+    - Aliens can pick conveyors + machines up and move them around (will need an 'arms up' modification to kenney graphics?).
+    - things (resources, parts, products) can go on the conveyor belts + will move up/down/left/right (might need conveyor up/down moving graphics?)
+    - Aliens should be able to pick (resources, parts, products) up + put them back on the conveyors.
+    - machines can take an input belt + create other things
+    - source 'hoppers' for raw materials, feed in if the conveyor is empty
+    - some simple recipes for things (products)
+    - output 'trucks' to take away specific products
+
+
+2018-10-21 11.13AM (T+13 minutes)
+---------------------------------
+
+The theme is flow, so the first step is to go look at kenney.nl (https://kenney.nl/assets?q=2d) and think about the sorts of games I can make, and how I'm going to do this whole thing.
+
+Wishlist:
+    . it should definitely be multiplayer
+    . use the cute aliens from the platformer pack
+    . use joysticks and have a couch game (but still need a single player mode)
+
+Thoughts on the theme/graphics:
+    . Should we use just one or two map packs? or collate a "custom" image set?
+    . Platformer deluxe doesn't really fit the 'flow' theme (pipes, rivers, etc.) unless I do weird stuff with it?
+    . Some sort of pipes? Aliens building a pipe network for some reason? Water or sewage management? (https://kenney.nl/assets/puzzle-pack-2)
+    . Or perhaps holding back a tide or river to save a town from flooding? (https://kenney.nl/assets/map-pack)
+        - rain -> river flow, build dams, plant/log trees, build sandbag walls, dig trenches, operate pumps, move water downhill or soak it into the ground.
+    . Population or animal management?
+        - Fences, food, crazy goat AI
+        - try to get animals into the right place without having your roses or crops eaten
+        - paths, different animal types don't mix (chickens + pigs)
+        - animals can break fences if they're left for too long near food
+    . Perhaps a permaculture simulation game? :o
+        - more a simulation: cut down trees, plant different ones, encourage animals
+        - manage erosion, water, sun, wind
+        - relationships between the animals + plants, spreading seeds (poop!), eating certain types
+        - fencing + management while the system stabilises
+        - need to feed yourself, too.
+    . Platformer industrial pack (https://kenney.nl/assets/platformer-pack-industrial) could work (not included in platformer complete pack?)
+        - manage a production line, build conveyor belts, pick things up, run around with them
+        - machines which assemble parts to make 'stuff'
+            - ingots (copper, iron, carbon?, aluminium, biological?, glass)
+                -> plates, wires, cogs
+                -> widgets (boxes? larger parts, anyway)
+                -> TVs, chainsaws, toys, robots (generic items pack: https://kenney.nl/assets/generic-items)
+        - different types of flow
+            - parts, electrical, hydraulic
+            - multiple lines of production
+            - different tools for each, which you have to pick up and put down :)
+        - limited parts (belts, pipes, wires, machines) to make it happen
+        - new parts arrive all the time (can order some?)
+        - requests for new things to make,
+        - refactoring production lines on the fly
+        - maybe stuff randomly breaks and backs up and you have to fix it?
+        - timed, everyone running around frantically trying to make it all hang together
+        - bathroom breaks - every alien has a little yellow bar next to them which builds up over time. Maybe only one bathroom, too :D
+        - A manual (which you have to go run to) which will bring up lists of recipes
+        - Maybe you need to build the machines, too?
+
+
+Workflow:
+    . 3 hour 'crunches' a'la agile sprints
+    . 2-3 crunches per day 
+        - maybe 4 if a crunch finishes early
+        - 2 if I have something on in the evening
+    . try and have an extra feature + working game at the end of each crunch
+    . Python-only version for most of it, but build an .exe at key points/milestones
+    . recruit play testers
+        - family :)
+        - might be hard for a couch co-op?
+    . need to leave time for polish + playtesting (maybe? or just go full goat simulator)
+
