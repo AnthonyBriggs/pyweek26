@@ -4,30 +4,64 @@ import random
 import sys
 
 from player import Player
-from machines import conveyor
+from machines import Conveyor
 
-WIDTH = 800
 HEIGHT = 600
+WIDTH = 800
 
-# dict of Player objects, indexed by joystick number
-# might need to map joystick number to player instead, and
-# start with player 1, etc. - or disable the GCN adapter?
-players = {}
-
-# random scattering of conveyors for now
-# indexed by position in the grid, (x,y)
-conveyors = {}
-for i in range(10):
-    conveyor
+class Game(object):
+    "Simple class, used to pass globals around :>"
     
+    def __init__(self, HEIGHT, WIDTH):
+        self.WIDTH = WIDTH
+        self.HEIGHT = HEIGHT
+    
+        # dict of Player objects, indexed by joystick number
+        # might need to map joystick number to player instead, and
+        # start with player 1, etc. - or disable the GCN adapter?
+        self.players = {}
+        self.machines = {}
+        
+        self.GRID_SIZE = 70
+        self.GRID_WIDTH = int(WIDTH / self.GRID_SIZE)
+        self.GRID_HEIGHT = int(HEIGHT / self.GRID_SIZE)
+
+        # random scattering of conveyors for now, to test pick up + put down
+        # indexed by position in the grid, (x,y)
+        # conveyor images are 70 x 70, so that's our grid
+        for i in range(10):
+            x = random.randint(0, self.GRID_WIDTH)
+            y = random.randint(0, self.GRID_HEIGHT)
+            self.machines[(x,y)] = Conveyor(self, x, y)
+    
+    def point(self, pos):
+        screen.draw.circle(pos, 5, (255,0,0))
+        
+    def convert_to_grid(self, x, y):
+        return (int(x / self.GRID_SIZE),
+                int(y / self.GRID_SIZE))
+
+    def convert_from_grid(self, grid_x, grid_y):
+        return (grid_x * self.GRID_SIZE,
+                grid_y * self.GRID_SIZE)
+
+game = Game(HEIGHT, WIDTH)
+print("Game initialised")
+
+
 def draw():
+    # TODO: draw according to grid depth/height in the factory
     screen.clear()
-    for player in players.values():
+    for player in game.players.values():
         player.draw()
+    for machine in game.machines.values():
+        machine.draw()
 
 def update():
-    for player in players.values():
+    for player in game.players.values():
         player.update()
+    for machine in game.machines.values():
+        machine.update()
 
 
 def on_joy_button_down(joy, button):
@@ -36,17 +70,17 @@ def on_joy_button_down(joy, button):
     player_no = int(joy) - 4 + 1
     # TODO: hardcoded buttons - will change per controller
     if button in (joybutton.SIX, joybutton.SEVEN):
-        if player_no not in players:
+        if player_no not in game.players:
             #spawn a new player
-            players[player_no] = Player(player_no, screen)
+            game.players[player_no] = Player(game, player_no)
         else:
             # remove 'em, but handle the press first, to give us
             # a chance to do things before they're removed
-            players[player_no].handle_button(button)
-            del players[player_no]
+            game.players[player_no].handle_button(button)
+            del game.players[player_no]
     
-    if player_no in players:
-        players[player_no].handle_button(button)
+    if player_no in game.players:
+        game.players[player_no].handle_button(button)
     
 def sanitise_axis(value):
     # make a small 'dead spot' in the middle or we'll drift
@@ -59,8 +93,8 @@ def on_joy_axis_motion(joy, axis, value):
     print("Mu joystick move:", joy, axis, value)
     # hack to get around GCN adapter
     player_no = int(joy) - 4 + 1
-    if player_no in players:
-        players[player_no].handle_axis(axis, sanitise_axis(value))
+    if player_no in game.players:
+        game.players[player_no].handle_axis(axis, sanitise_axis(value))
 
 
 def on_key_down(key):
