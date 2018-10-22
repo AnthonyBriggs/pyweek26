@@ -4,7 +4,10 @@ class Item(Actor):
     from ore, to circuit boards to bicycles.
     
     Mostly passive - position, etc. are set by its container,
-    player, conveyor, etc."""
+    player, conveyor, etc.
+    
+    Item anchors should be in the bottom middle of the image,
+    so that they sit on the conveyor in convincing fashion :)"""
     
     def __init__(self, name, *args, **kwargs):
         self.name = name

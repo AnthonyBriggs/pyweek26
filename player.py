@@ -3,7 +3,6 @@ import sys
 from pgzero.actor import Actor
 
 class Player(Actor):
-    
     def __init__(self, game, number, *args, **kwargs):
         self.number = number
         self.game = game
@@ -14,7 +13,7 @@ class Player(Actor):
         self.move_distance = 0
         self.carrying = False
         self.spawn()
-        self.highlight = Actor('players/highlight')
+        self.highlight = Actor('players/highlight', anchor=(0, 70))
         
     def __str__(self):
         return "<Player {}, position: {}>".format(self.number, self.pos)
@@ -74,21 +73,22 @@ class Player(Actor):
             self.bottom = self.game.HEIGHT
     
         if self.carrying:
+            # The anchor on the conveyor is on the left, 
+            # so subtract a grid size if we're facing that way
             if self.facing_left:
-                self.carrying.x = self.x - 40
+                self.carrying.x = self.x - self.game.GRID_SIZE
             else:
-                self.carrying.x = self.x + 40
+                self.carrying.x = self.x + self.game.GRID_SIZE
             self.carrying.y = self.y + 20
     
     def calc_grid(self):
-        # Player grid is centered on the sprite, so needs some hackery
         grid_size = self.game.GRID_SIZE
         if self.facing_left:
-            fudge = -grid_size * 0.75
+            fudge = -grid_size * 0.9
         else:
-            fudge = grid_size * 0.75
+            fudge = grid_size * 0.9
         return (int((self.x + fudge) / self.game.GRID_SIZE),
-                int((self.y + grid_size * 0.66) / self.game.GRID_SIZE))
+                int((self.y + grid_size * 0.5) / self.game.GRID_SIZE))
     
     def find_machine(self):
         """Return the most reasonable machine from the player's position,
@@ -104,7 +104,10 @@ class Player(Actor):
     
     def find_space(self):
         """Return a reasonable blank space."""
-        my_grid = self.calc_grid()
+        #my_grid = self.calc_grid()
+        my_grid = self.game.convert_to_grid(
+                    self.carrying.pos[0],
+                    self.carrying.pos[1] + self.game.GRID_SIZE * 0.5)
         checks = (0, -1) if self.facing_left else (0, 1)
         for i in checks:
             the_grid = (my_grid[0]+i, my_grid[1])

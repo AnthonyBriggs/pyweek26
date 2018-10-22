@@ -29,9 +29,10 @@ class Conveyor(Actor):
     
     def draw_item(self):
         if self.item:
-            self.item.x = self.x - 35 + self.item_pos
-            self.item.y = self.y - 20
+            self.item.x = self.x + self.item_pos
+            self.item.y = self.y - 11
             self.item.draw()
+            self.game.point(self.item.pos, (0,255,255))
     
     def update(self, dt):
         if not self.carried:
@@ -65,6 +66,7 @@ class Conveyor(Actor):
         self.item_pos = 0
         return True
 
+
 class OreChute(Actor):
     """Produces ore and raw materials of various types:
     copper, iron, organics, aluminium, glass.
@@ -87,9 +89,9 @@ class OreChute(Actor):
         return "<OreChute, position: {}>".format(self.pos)
     
     def draw(self):
-        self.game.point(self.pos, (0,255,0))
         super().draw()
-    
+        self.game.point(self.pos, (0,255,0))
+
     def update(self, dt):
         self.next_ore -= dt
         #print("Next ore in", self.next_ore)
@@ -101,7 +103,7 @@ class OreChute(Actor):
         """Ore is sent to the right."""
         conveyor = self.game.machines.get((self.grid_x + 1, self.grid_y), None)
         if conveyor:
-            success = conveyor.push_from_left( Item(self.ore_type) )
+            success = conveyor.push_from_left( Item(self.ore_type, anchor=(12, 42)) )
             if not success:
                 # hang onto it? Maybe have one in storage, periodically try to push,
                 # create another if empty.

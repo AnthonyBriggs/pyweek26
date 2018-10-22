@@ -24,6 +24,9 @@ https://pygame-zero.readthedocs.io/en/stable/builtins.html
 
 Just fixed a few weird bugs and reworked how the conveyor belt works. Now instead of having three positions, it maintains a linear distance and updates it constantly, so that the items move smoothly. A couple of bug fixes later and it seems to work pretty well. The annoying one was forgetting to return True when a conveyer accepts an item, so it was pushing the same item along the belt 
 
+Anyway, next up is making conveyors move things up, down and right to left, which I might leave for tomorrow. I've done the images, not sure they're up to Kenney's high standards though.
+
+
 2018-10-21 5.50PM (T+nearly7hrs)
 -----------------------------
 

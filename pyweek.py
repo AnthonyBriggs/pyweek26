@@ -1,5 +1,7 @@
 # Write your code here :-)
 
+print("Starting...")
+
 import random
 import sys
 
@@ -8,6 +10,7 @@ from machines import Conveyor, OreChute
 
 HEIGHT = 600
 WIDTH = 800
+
 
 class Game(object):
     "Simple class, used to pass globals around :>"
@@ -32,9 +35,9 @@ class Game(object):
         for i in range(10):
             x = random.randint(1, self.GRID_WIDTH)
             y = random.randint(1, self.GRID_HEIGHT)
-            self.machines[(x,y)] = Conveyor(self, x, y, anchor=(35,11))
+            self.machines[(x,y)] = Conveyor(self, x, y, anchor=(0,30))
     
-        self.machines[(0,5)] = OreChute(self, 0, 5, "copper_ingot", 5)
+        self.machines[(0,5)] = OreChute(self, 0, 5, "copper_ingot", 5, anchor=(0, 70))
         
     def point(self, pos, color=(255,0,0)):
         screen.draw.circle(pos, 5, color)
@@ -47,16 +50,26 @@ class Game(object):
         return (grid_x * self.GRID_SIZE,
                 grid_y * self.GRID_SIZE)
 
-print("Starting...")
+print("Initialising...")
 game = Game(HEIGHT, WIDTH)
 print("Game initialised")
 
+print(game.convert_from_grid(1,1))
 
 def draw():
-    # TODO: draw according to grid depth/height in the factory
     screen.clear()
+    
+    # draw a grid so we can tell what's going on with positioning
+    for i in range(0, game.WIDTH, game.GRID_SIZE):
+        screen.draw.line((i,0), (i, game.HEIGHT), (66,33,33))
+    for j in range(0, game.HEIGHT, game.GRID_SIZE):
+        screen.draw.line((0,j), (game.WIDTH, j), (33,66,33))
+    
+    # TODO: draw according to grid depth/height in the factory
     for player in game.players.values():
         player.draw()
+    # we draw all items first, otherwise there's some visible overlap
+    # when moving from one conveyor to the next
     for machine in game.machines.values():
         if type(machine) is Conveyor:
             machine.draw_item()
@@ -78,7 +91,7 @@ def on_joy_button_down(joy, button):
     if button in (joybutton.SIX, joybutton.SEVEN):
         if player_no not in game.players:
             #spawn a new player
-            game.players[player_no] = Player(game, player_no)
+            game.players[player_no] = Player(game, player_no, anchor=(0,70))
         else:
             # remove 'em, but handle the press first, to give us
             # a chance to do things before they're removed
