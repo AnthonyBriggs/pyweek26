@@ -160,7 +160,7 @@ class Player(Actor):
                     pass
         
         if button == joybutton.TWO:
-            # debug the damn conveyors
+            # debug the conveyors
             machine, my_grid = self.find_machine()
             if machine:
                 print(machine)

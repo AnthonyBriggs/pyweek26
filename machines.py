@@ -156,5 +156,42 @@ class OreChute(Actor):
         else:
             # push it onto the floor? For now, do nothing
             pass
-        
+
+
+class LoadingDock(Actor):
+    """Accepts packaged goods for delivery to customers."""
     
+    def __init__(self, game, grid_x, grid_y, item_type, loading_time, *args, **kwargs):
+        self.grid_x = grid_x
+        self.grid_y = grid_y
+
+        self.game = game
+        image_name = 'machines/loading_dock'
+        super().__init__(image_name, *args, **kwargs)
+        self.x, self.y = game.convert_from_grid(grid_x, grid_y)
+        self.item_type = item_type
+        self.loading_time = loading_time
+        self.next_load = loading_time
+    
+    def __str__(self):
+        return "<Loading Dock, position: {}, item_type: {}>".format(self.pos, self.item_type)
+    
+    def draw(self):
+        super().draw()
+        self.game.point(self.pos, (255,255,0))
+
+    def update(self, dt):
+        self.next_load -= dt
+        print("Next load in", self.next_load)
+        if self.next_load <= 0:
+            self.next_load = 0
+
+    def receive_item_push(self, item, from_direction):
+        """Receive an item from another machine, or return False."""
+        print(item.name, item, self.next_load)
+        if item.name == self.item_type and self.next_load <= 0:
+            # TODO: increment score or quota
+            self.next_load = self.loading_time
+            return True
+        else:
+            return False

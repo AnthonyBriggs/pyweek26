@@ -1,15 +1,13 @@
 # Write your code here :-)
 
-print("Starting...")
-
 import random
 import sys
 
 from player import Player
-from machines import Conveyor, OreChute
+from machines import Conveyor, OreChute, LoadingDock
 
-HEIGHT = 600
-WIDTH = 800
+HEIGHT = 10 * 70
+WIDTH = 12 * 70
 
 
 class Game(object):
@@ -32,13 +30,14 @@ class Game(object):
         # random scattering of conveyors for now, to test pick up + put down
         # indexed by position in the grid, (x,y)
         # conveyor images are 70 x 70, so that's our grid
-        for i in range(10):
+        for i in range(18):
             x = random.randint(1, self.GRID_WIDTH)
             y = random.randint(1, self.GRID_HEIGHT)
             self.machines[(x,y)] = Conveyor(self, x, y, anchor=(0,30))
     
         self.machines[(0,5)] = OreChute(self, 0, 5, "copper_ingot", 10, anchor=(0, 70))
-        
+        self.machines[(self.GRID_WIDTH-1,5)] = LoadingDock(self, self.GRID_WIDTH-1, 5, "copper_ingot", 10, anchor=(0, 70))
+
     def point(self, pos, color=(255,0,0)):
         screen.draw.circle(pos, 5, color)
         
@@ -50,7 +49,6 @@ class Game(object):
         return (grid_x * self.GRID_SIZE,
                 grid_y * self.GRID_SIZE)
 
-print("Initialising...")
 game = Game(HEIGHT, WIDTH)
 print("Game initialised")
 
