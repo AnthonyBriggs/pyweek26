@@ -19,6 +19,14 @@ https://pygame-zero.readthedocs.io/en/stable/hooks.html
 https://pygame-zero.readthedocs.io/en/stable/builtins.html
 
 
+2018-10-22 11.40PM (T+36hrs)
+----------------------------
+
+Ok, time for bed now, but I've just added the first machine to the game, which stamps copper ingots into circuit boards. A couple of conveyor belts and voila! The first working factory. Sure, it's pretty simple, but adding extra types of machine shouldn't be too hard (tm). The more ambitious goal is to have different machine *parts*, ie. 2, 3 or 4 boxes, which make different stuff depending on how you arrange them.
+
+Tomorrow I'll have a clearer day, so I might be able to chew through some more features. Top of the list is making the UI just a little more intuitive, which has been bumped mainly because it's making the game hard to test. If *I'm* finding it annoying to play, what hope does anyone else have? :D
+
+
 2018-10-22 6.06PM (T+32hrs)
 ---------------------------
 

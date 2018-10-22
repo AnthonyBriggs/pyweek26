@@ -180,6 +180,7 @@ class Player(Actor):
                 self.game.machines[my_grid] = my_machine
                 my_machine.grid_x = my_grid[0]
                 my_machine.grid_y = my_grid[1]
+                my_machine.x, my_machine.y = self.game.convert_from_grid(*my_grid)
                 my_machine.carried = False
                 my_machine.direction = self.player_facing()
                 print("Putting down", my_machine, "at", my_grid, "facing", my_machine.direction)

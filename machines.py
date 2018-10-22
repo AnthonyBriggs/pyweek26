@@ -195,3 +195,57 @@ class LoadingDock(Actor):
             return True
         else:
             return False
+            
+class StampyThing(Actor):
+    """Stamps ore into circuit boards."""
+    
+    def __init__(self, game, grid_x, grid_y, item_input, item_output, stamping_time, *args, **kwargs):
+        self.grid_x = grid_x
+        self.grid_y = grid_y
+        self.game = game
+        image_name = 'machines/machine_1'
+        super().__init__(image_name, *args, **kwargs)
+        self.x, self.y = game.convert_from_grid(grid_x, grid_y)
+        self.item = None
+        self.item_input = item_input
+        self.item_output = item_output
+        self.stamping_time = stamping_time
+        self.next_stamp = stamping_time
+    
+    def __str__(self):
+        return "<Stampy Thing, position: {}, item_types: {} -> {}>".format(self.pos, self.item_input, self.item_output)
+    
+    def draw(self):
+        super().draw()
+        self.game.point(self.pos, (255,255,0))
+
+    def update(self, dt):
+        self.next_stamp -= dt
+        print("Next stamp in", self.next_stamp)
+        if self.next_stamp <= 0:
+            self.next_stamp = 0
+            if self.item:
+                if self.item.name == self.item_input:
+                    # Stamp it!
+                    self.item = Item(self.item_output, anchor=(60, 60))
+                # push it out the bottom side
+                conveyor = self.game.machines.get((self.grid_x, self.grid_y+1), None)
+                if conveyor:
+                    success = conveyor.receive_item_push( self.item, from_direction=0 )
+                    if success:
+                        self.item = None
+    
+    def receive_item_push(self, item, from_direction):
+        """Receive an item from another machine, or return False."""
+        
+        print(item.name, item, self.next_stamp)
+        if self.item:
+            return False
+        if item.name != self.item_input:
+            return False
+        if from_direction != 0:
+            return False
+        
+        # ok, we'll accept an item, but won't necessarily stamp it yet
+        self.item = item
+        return True

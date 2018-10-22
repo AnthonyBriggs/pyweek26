@@ -4,7 +4,7 @@ import random
 import sys
 
 from player import Player
-from machines import Conveyor, OreChute, LoadingDock
+from machines import Conveyor, OreChute, LoadingDock, StampyThing
 
 HEIGHT = 10 * 70
 WIDTH = 12 * 70
@@ -36,7 +36,10 @@ class Game(object):
             self.machines[(x,y)] = Conveyor(self, x, y, anchor=(0,30))
     
         self.machines[(0,5)] = OreChute(self, 0, 5, "copper_ingot", 10, anchor=(0, 70))
-        self.machines[(self.GRID_WIDTH-1,5)] = LoadingDock(self, self.GRID_WIDTH-1, 5, "copper_ingot", 10, anchor=(0, 70))
+        self.machines[(self.GRID_WIDTH-1,5)] = LoadingDock(self, self.GRID_WIDTH-1, 5, "circuit_board", 8, anchor=(0, 70))
+        self.machines[(5,5)] = StampyThing(self, 5, 5, 
+                                    item_input="copper_ingot", item_output="circuit_board", stamping_time=8,
+                                    anchor=(0, 70))
 
     def point(self, pos, color=(255,0,0)):
         screen.draw.circle(pos, 5, color)
