@@ -19,6 +19,24 @@ https://pygame-zero.readthedocs.io/en/stable/hooks.html
 https://pygame-zero.readthedocs.io/en/stable/builtins.html
 
 
+2018-10-22 4.19PM (T+31hrs)
+---------------------------
+
+Progress! You can now (sort of) specify which direction a belt should go, by holding down the button and pushing the stick in the four cardinal directions, then letting go. 
+
+The animations are all in there, and the positioning's mostly right (we'll see once there's more than one type of item).
+
+The conveyors still pass from left to right though, despite the visuals, and the UI/highlighting is still hot garbage :D
+
+
+2018-10-22 3.13PM (T+30hrs)
+---------------------------
+
+Didn't get to the game until about 2, and have spent an hour or so twiddling. Positioning was reeaaallly screwy, so this was an attempt to make things more consistent. Everything now has it's pos in the bottom left corner, except for players which are taller images and just have (0, 70). items have their position just to the right of the bottom middle of the image so they line up on conveyors properly.
+
+Now on to up/down conveyors, which seems like I'll need to rewrite a bunch of conveyor handling, but might not be too bad.
+
+
 2018-10-21 8.59PM (T+10hrs)
 ---------------------------
 

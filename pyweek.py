@@ -68,13 +68,13 @@ def draw():
     # TODO: draw according to grid depth/height in the factory
     for player in game.players.values():
         player.draw()
-    # we draw all items first, otherwise there's some visible overlap
+    for machine in game.machines.values():
+        machine.draw()
+    # we draw items second, otherwise there's some visible overlap
     # when moving from one conveyor to the next
     for machine in game.machines.values():
         if type(machine) is Conveyor:
             machine.draw_item()
-    for machine in game.machines.values():
-        machine.draw()
 
 def update(dt):
     for player in game.players.values():
@@ -99,8 +99,15 @@ def on_joy_button_down(joy, button):
             del game.players[player_no]
     
     if player_no in game.players:
-        game.players[player_no].handle_button(button)
-    
+        game.players[player_no].handle_button_down(button)
+        
+def on_joy_button_up(joy, button):
+    print("Mu button down:", joy, button)
+    # hack to get around GCN adapter
+    player_no = int(joy) - 4 + 1
+    if player_no in game.players:
+        game.players[player_no].handle_button_up(button)
+
 def sanitise_axis(value):
     # make a small 'dead spot' in the middle or we'll drift
     if -0.05 < value < 0.05:
