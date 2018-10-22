@@ -34,7 +34,6 @@ class Player(Actor):
             machine, my_grid = self.find_machine()
         if self.carrying or machine:
             if self.putting_down:
-
                 pos = self.game.convert_from_grid(*my_grid)
                 direction = self.player_facing()
                 if direction == 0:
@@ -140,7 +139,7 @@ class Player(Actor):
         return (machine, the_grid)
         
     def handle_button_down(self, button):
-        print("Player {} pushed button {}".format(self, button))
+        #print("Player {} pushed button {}".format(self, button))
         
         if button == joybutton.ZERO:
             # pick up/put down the thing
@@ -159,7 +158,14 @@ class Player(Actor):
                 else:
                     # nope, there's nothing there
                     pass
-    
+        
+        if button == joybutton.TWO:
+            # debug the damn conveyors
+            machine, my_grid = self.find_machine()
+            if machine:
+                print(machine)
+        
+        
     def handle_button_up(self, button):
         if button == joybutton.ZERO and self.carrying and self.putting_down:
             machine, my_grid = self.find_space()
@@ -200,7 +206,7 @@ class Player(Actor):
                 return 2
     
     def handle_axis(self, axis, value):
-        print("Player {} moved axis {}: {}".format(self, axis, value))
+        #print("Player {} moved axis {}: {}".format(self, axis, value))
         if axis == axis.X:
             self.speed[0] = value * 7
             self.last_x = value

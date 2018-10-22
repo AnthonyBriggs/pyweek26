@@ -37,7 +37,7 @@ class Game(object):
             y = random.randint(1, self.GRID_HEIGHT)
             self.machines[(x,y)] = Conveyor(self, x, y, anchor=(0,30))
     
-        self.machines[(0,5)] = OreChute(self, 0, 5, "copper_ingot", 5, anchor=(0, 70))
+        self.machines[(0,5)] = OreChute(self, 0, 5, "copper_ingot", 10, anchor=(0, 70))
         
     def point(self, pos, color=(255,0,0)):
         screen.draw.circle(pos, 5, color)
@@ -84,7 +84,7 @@ def update(dt):
 
 
 def on_joy_button_down(joy, button):
-    print("Mu button down:", joy, button)
+    #print("Mu button down:", joy, button)
     # hack to get around GCN adapter
     player_no = int(joy) - 4 + 1
     # TODO: hardcoded buttons - will change per controller
@@ -102,7 +102,7 @@ def on_joy_button_down(joy, button):
         game.players[player_no].handle_button_down(button)
         
 def on_joy_button_up(joy, button):
-    print("Mu button down:", joy, button)
+    #print("Mu button down:", joy, button)
     # hack to get around GCN adapter
     player_no = int(joy) - 4 + 1
     if player_no in game.players:
@@ -116,7 +116,7 @@ def sanitise_axis(value):
         return value
 
 def on_joy_axis_motion(joy, axis, value):
-    print("Mu joystick move:", joy, axis, value)
+    #print("Mu joystick move:", joy, axis, value)
     # hack to get around GCN adapter
     player_no = int(joy) - 4 + 1
     if player_no in game.players:

@@ -19,6 +19,24 @@ https://pygame-zero.readthedocs.io/en/stable/hooks.html
 https://pygame-zero.readthedocs.io/en/stable/builtins.html
 
 
+2018-10-22 6.06PM (T+32hrs)
+---------------------------
+
+The coins on the conveyor belt go round and round, round and round, round and round...
+
+The coins on the conveyor belt go round and round, Iiiiii fixed the bug!
+
+After some thrashing around, I realised that I'd left a stray "self.grid_y - 1" in one of the conveyor pushing calculations, and conveyors now push things around. Yay me! This is one of the core mechanisms of the game, so I'm glad it didn't take too long to track it down.
+
+From here, I'll need a couple of other things:
+    * A sink for these items (ie. a loading dock to ship things off to customers)
+    * Machines that'll convert some combination of items into something else.
+
+Once those are done, then the basic core of the game will be working. It puts the conveyors down and it moves the things from one place to another.
+
+After that it'll just be a Simple Matter Of Programming all the rest of the things - a big list of recipes, fixing the UI, adding machines somehow and then adding displays to those machines so that you know which bits convert or produce or sink what items.
+
+
 2018-10-22 4.19PM (T+31hrs)
 ---------------------------
 

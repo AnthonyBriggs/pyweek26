@@ -24,7 +24,7 @@ class Conveyor(Actor):
         
         
     def __str__(self):
-        return "<Conveyor, position: {}, item:{}/{}>".format(self.pos, self.item, self.item_pos)
+        return "<Conveyor, position: {}, item:{}/{}, direction: {}>".format(self.pos, self.item, self.item_pos, self.direction)
     
     def draw(self):
         if self.direction in (0, 2):
@@ -71,9 +71,12 @@ class Conveyor(Actor):
             if self.item_pos >= self.game.GRID_SIZE:
                 self.item_pos = self.game.GRID_SIZE
                 # need to push off the end
-                conveyor = self.game.machines.get((self.grid_x + 1, self.grid_y), None)
+                target_grid = self.get_target_grid()
+                conveyor = self.game.machines.get(target_grid, None)
                 if conveyor:
-                    success = conveyor.push_from_left(self.item)
+                    from_direction = [2, 3, 0, 1][self.direction]   # 0123 -> 2301
+                    #print("Attempting to push", from_direction, "from", self, "to", conveyor)
+                    success = conveyor.receive_item_push(self.item, from_direction)
                     if success:
                         self.item = None
                         self.item_pos = 0
@@ -83,14 +86,28 @@ class Conveyor(Actor):
         else:
             self.item_pos = 0
         
-    # find neighbors to push to
-    def push_from_left(self, item):
-        """Receive an item from the left."""
+    def receive_item_push(self, item, from_direction):
+        """Receive an item from another machine, or return False."""
         if self.item:
+            #print (self, "Denied push from", from_direction, "(", self.direction, ")")
+            return False
+        if from_direction == self.direction:
+            #print (self, "Denied push from", from_direction, "(", self.direction, ")")
             return False
         self.item = item
         self.item_pos = 0
         return True
+
+    def get_target_grid(self):
+        """Where is this conveyor pushing to?"""
+        if self.direction == 0:
+            return (self.grid_x, self.grid_y - 1)
+        if self.direction == 1:
+            return (self.grid_x + 1, self.grid_y)
+        if self.direction == 2:
+            return (self.grid_x, self.grid_y + 1)
+        if self.direction == 3:
+            return (self.grid_x - 1, self.grid_y)
 
 
 class OreChute(Actor):
@@ -129,7 +146,7 @@ class OreChute(Actor):
         """Ore is sent to the right."""
         conveyor = self.game.machines.get((self.grid_x + 1, self.grid_y), None)
         if conveyor:
-            success = conveyor.push_from_left( Item(self.ore_type, anchor=(12, 26)) )
+            success = conveyor.receive_item_push( Item(self.ore_type, anchor=(12, 26)), from_direction=3 )
             if not success:
                 # hang onto it? Maybe have one in storage, periodically try to push,
                 # create another if empty.
