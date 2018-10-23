@@ -10,11 +10,13 @@ class Player(Actor):
         super().__init__(image_name, *args, **kwargs)
         self.speed = [0, 0]
         self.facing_left = False
+        self.last_x = self.last_y = 0
         self.move_distance = 0
         self.carrying = False
         self.putting_down = False
         self.spawn()
         self.highlight = Actor('players/highlight', anchor=(0, 70))
+        self.direction = Actor('players/direction_1', anchor=(0, 70))
         
     def __str__(self):
         return "<Player {}, position: {}>".format(self.number, self.pos)
@@ -28,25 +30,6 @@ class Player(Actor):
         self.pos = 100, 100
     
     def draw(self):
-        if self.carrying:
-            machine, my_grid = self.find_space()
-        else:
-            machine, my_grid = self.find_machine()
-        if self.carrying or machine:
-            if self.putting_down:
-                pos = self.game.convert_from_grid(*my_grid)
-                direction = self.player_facing()
-                if direction == 0:
-                    self.highlight.pos = (pos[0], pos[1] - self.game.GRID_SIZE)
-                elif direction == 2:
-                    self.highlight.pos = (pos[0], pos[1] + self.game.GRID_SIZE)
-                else:
-                    self.highlight.pos = self.game.convert_from_grid(*my_grid)
-                print("putting down at", my_grid, "->", self.highlight.pos)
-            else:
-                self.highlight.pos = self.game.convert_from_grid(*my_grid)
-            self.highlight.draw()
-        
         if self.speed == [0,0]:
             self.set_image('stand')
         else:
@@ -57,7 +40,29 @@ class Player(Actor):
         if self.carrying:
             self.carrying.draw()
         
-        self.game.point(self.pos)
+        #self.game.point(self.pos)
+        self.game.point((self.x, self.y))
+    
+    def draw_highlight(self):
+        my_grid = self.pick_up_space()
+        pos = self.game.convert_from_grid(*my_grid)
+        machine = self.game.machines.get(my_grid, None)
+        if self.putting_down and not machine:
+            # show a direction arrow
+            
+            # This fixes an utterly bizarre bug where left and right images
+            # are swapped, despite looking fine in the folder.
+            direction = self.player_facing()
+            if direction == 1: direction = 3
+            elif direction == 3: direction = 1
+            
+            self.direction.image = 'players/direction_{}'.format(direction)
+            print(self.direction.image, self.player_facing(), pos)
+            self.direction.pos = pos
+            self.direction.draw()
+        elif self.carrying or machine:
+            self.highlight.pos = pos
+            self.highlight.draw()
         
     def update(self, dt):
         #print ("updating player", self.number)
@@ -70,11 +75,12 @@ class Player(Actor):
         else:
             self.move_distance += abs(self.speed[0]) + abs(self.speed[1])
         
-        if self.speed[0] < 0:
-            self.facing_left = True
-        elif self.speed[0] > 0:
-            self.facing_left = False
-        self.flip = self.facing_left
+        if not self.putting_down:
+            if self.speed[0] < 0:
+                self.facing_left = True
+            elif self.speed[0] > 0:
+                self.facing_left = False
+            self.flip = self.facing_left
         
         if self.right > self.game.WIDTH:
             self.right = self.game.WIDTH
@@ -84,109 +90,20 @@ class Player(Actor):
             self.top = 0
         if self.bottom > self.game.HEIGHT:
             self.bottom = self.game.HEIGHT
-    
+        
         if self.carrying:
-            self.carrying.y = self.y + 20
+            self.carrying.y = self.y + 30
             if self.putting_down:
-                direction = self.player_facing()
-                self.carrying.direction = direction
-                if direction == 0:
-                    self.carrying.y -= self.game.GRID_SIZE
-                elif direction == 2:
-                    self.carrying.y += self.game.GRID_SIZE
-
-            # The anchor on the conveyor is on the left, 
-            # so subtract a grid size if we're facing that way
-            if self.facing_left:
-                self.carrying.x = self.x - self.game.GRID_SIZE
+                self.carrying.direction = self.player_facing()
+                self.carrying.pos = self.game.convert_from_grid(*self.putting_down)
             else:
-                self.carrying.x = self.x + self.game.GRID_SIZE
-                
-    
-    def calc_grid(self):
-        grid_size = self.game.GRID_SIZE
-        if self.facing_left:
-            fudge = -grid_size * 0.9
-        else:
-            fudge = grid_size * 0.9
-        return (int((self.x + fudge) / self.game.GRID_SIZE),
-                int((self.y + grid_size * 0.5) / self.game.GRID_SIZE))
-    
-    def find_machine(self):
-        """Return the most reasonable machine from the player's position,
-        or None if there aren't any"""
-        my_grid = self.calc_grid()
-        checks = (0, -1) if self.facing_left else (0, 1)
-        for i in checks:
-            the_grid = (my_grid[0]+i, my_grid[1])
-            machine = self.game.machines.get(the_grid, None)
-            if machine:
-                return (machine, the_grid)
-        return (machine, the_grid)
-    
-    def find_space(self):
-        """Return a reasonable blank space."""
-        #my_grid = self.calc_grid()
-        my_grid = self.game.convert_to_grid(
-                    self.carrying.pos[0],
-                    self.carrying.pos[1] + self.game.GRID_SIZE * 0.5)
-        checks = (0, -1) if self.facing_left else (0, 1)
-        for i in checks:
-            the_grid = (my_grid[0]+i, my_grid[1])
-            machine = self.game.machines.get(the_grid, None)
-            if not machine:
-                return (machine, the_grid)
-        return (machine, the_grid)
-        
-    def handle_button_down(self, button):
-        #print("Player {} pushed button {}".format(self, button))
-        
-        if button == joybutton.ZERO:
-            # pick up/put down the thing
-            if self.carrying:
-                # prepare to put down: display a highlight where it'll go,
-                # and put it down when the button is released
-                self.putting_down = True
-            else:
-                # try to pick up
-                machine, my_grid = self.find_machine()
-                if machine:
-                    print("Picking up", machine)
-                    machine.carried = True
-                    self.carrying = machine
-                    del self.game.machines[my_grid]     # dangerous! 
+                # The anchor on the conveyor is on the left, 
+                # so subtract a grid size if we're facing that way
+                if self.facing_left:
+                    self.carrying.x = self.x - self.game.GRID_SIZE * 1.5
                 else:
-                    # nope, there's nothing there
-                    pass
-        
-        if button == joybutton.TWO:
-            # debug the conveyors
-            machine, my_grid = self.find_machine()
-            if machine:
-                print(machine)
-        
-        
-    def handle_button_up(self, button):
-        if button == joybutton.ZERO and self.carrying and self.putting_down:
-            machine, my_grid = self.find_space()
-            if machine:
-                # nope, there's something there
-                pass
-            else:
-                # Check which direction the player / player's joystick is facing,
-                # and make the conveyor face that way.
+                    self.carrying.x = self.x + self.game.GRID_SIZE * 0.5
                 
-                my_machine = self.carrying
-                self.game.machines[my_grid] = my_machine
-                my_machine.grid_x = my_grid[0]
-                my_machine.grid_y = my_grid[1]
-                my_machine.x, my_machine.y = self.game.convert_from_grid(*my_grid)
-                my_machine.carried = False
-                my_machine.direction = self.player_facing()
-                print("Putting down", my_machine, "at", my_grid, "facing", my_machine.direction)
-                self.carrying = False
-                self.putting_down = False
-    
     def player_facing(self):
         if (self.last_x, self.last_y) == (0, 0):
             if self.facing_left:
@@ -205,6 +122,72 @@ class Player(Actor):
                 return 0
             else:
                 return 2
+        return 1
+    
+    def pick_up_space(self):
+        """Which space are we currently able to pick up?"""
+        me = self.game.convert_to_grid(self.x, self.y)
+        if self.putting_down:
+            # grid is fixed, only direction will change,
+            # based on the joystick direction
+            return self.putting_down
+                    
+        # Otherwise, just base it on grid squares to the left or right
+        # For some reason, we need to add one to the y value? Not sure where this is coming from...
+        if self.facing_left:
+            return (me[0] - 1, me[1] + 1)
+        else:
+            return (me[0] + 1, me[1] + 1)
+    
+    def handle_button_down(self, button):
+        #print("Player {} pushed button {}".format(self, button))
+        if button == joybutton.ZERO:
+            # pick up/put down the thing
+            if self.carrying:
+                # prepare to put down: display a highlight where it'll go,
+                # and put it down when the button is released
+                self.putting_down = self.pick_up_space()
+            else:
+                # try to pick up
+                my_grid = self.pick_up_space()
+                machine = self.game.machines.get(my_grid, None)
+                if machine:
+                    print("Picking up", machine)
+                    machine.carried = True
+                    self.carrying = machine
+                    del self.game.machines[my_grid]     # dangerous! 
+                else:
+                    # nope, there's nothing there
+                    pass
+        
+        if button == joybutton.TWO:
+            # debug the conveyors
+            my_grid = self.pick_up_space()
+            machine = self.game.machines.get(my_grid, None)
+            if machine:
+                print(machine)
+        
+    def handle_button_up(self, button):
+        if button == joybutton.ZERO and self.carrying and self.putting_down:
+            my_grid = self.pick_up_space()
+            machine = self.game.machines.get(my_grid, None)
+            if machine:
+                # nope, there's something there
+                self.putting_down = False
+                pass
+            else:
+                # Check which direction the player / player's joystick is facing,
+                # and make the conveyor face that way.
+                my_machine = self.carrying
+                self.game.machines[my_grid] = my_machine
+                my_machine.grid_x = my_grid[0]
+                my_machine.grid_y = my_grid[1]
+                my_machine.x, my_machine.y = self.game.convert_from_grid(*my_grid)
+                my_machine.carried = False
+                my_machine.direction = self.player_facing()
+                print("Putting down", my_machine, "at", my_grid, "facing", my_machine.direction)
+                self.carrying = False
+                self.putting_down = False
     
     def handle_axis(self, axis, value):
         #print("Player {} moved axis {}: {}".format(self, axis, value))

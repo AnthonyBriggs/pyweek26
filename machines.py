@@ -151,7 +151,7 @@ class OreChute(Actor):
                 # hang onto it? Maybe have one in storage, periodically try to push,
                 # create another if empty.
                 # or just don't create it = backed up
-                print("Ore Chute backed up!")
+                #print("Ore Chute backed up!")
                 pass
         else:
             # push it onto the floor? For now, do nothing
@@ -172,6 +172,7 @@ class LoadingDock(Actor):
         self.item_type = item_type
         self.loading_time = loading_time
         self.next_load = loading_time
+        self.number_loaded = 0
     
     def __str__(self):
         return "<Loading Dock, position: {}, item_type: {}>".format(self.pos, self.item_type)
@@ -182,15 +183,16 @@ class LoadingDock(Actor):
 
     def update(self, dt):
         self.next_load -= dt
-        print("Next load in", self.next_load)
+        #print("Next load in", self.next_load)
         if self.next_load <= 0:
             self.next_load = 0
 
     def receive_item_push(self, item, from_direction):
         """Receive an item from another machine, or return False."""
-        print(item.name, item, self.next_load)
+        #print(item.name, item, self.next_load)
         if item.name == self.item_type and self.next_load <= 0:
             # TODO: increment score or quota
+            self.number_loaded += 1
             self.next_load = self.loading_time
             return True
         else:
@@ -221,7 +223,7 @@ class StampyThing(Actor):
 
     def update(self, dt):
         self.next_stamp -= dt
-        print("Next stamp in", self.next_stamp)
+        #print("Next stamp in", self.next_stamp)
         if self.next_stamp <= 0:
             self.next_stamp = 0
             if self.item:
@@ -237,8 +239,7 @@ class StampyThing(Actor):
     
     def receive_item_push(self, item, from_direction):
         """Receive an item from another machine, or return False."""
-        
-        print(item.name, item, self.next_stamp)
+        #print(item.name, item, self.next_stamp)
         if self.item:
             return False
         if item.name != self.item_input:

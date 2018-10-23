@@ -23,23 +23,30 @@ class Game(object):
         self.players = {}
         self.machines = {}
         
+        # conveyor images are 70 x 70, so that's our grid
         self.GRID_SIZE = 70
         self.GRID_WIDTH = int(WIDTH / self.GRID_SIZE)
         self.GRID_HEIGHT = int(HEIGHT / self.GRID_SIZE)
-
+        
+        self.machines[(0,5)] = OreChute(self, 0, 5, "copper_ingot", 10, anchor=(0, 70))
+        self.machines[(self.GRID_WIDTH-1,5)] = LoadingDock(self, self.GRID_WIDTH-1, 5,
+                                                           "circuit_board", 8, anchor=(0, 70))
+        self.machines[(5,5)] = StampyThing(self, 5, 5, 
+                                    item_input="copper_ingot", item_output="circuit_board",
+                                    stamping_time=8,
+                                    anchor=(0, 70))
+        
         # random scattering of conveyors for now, to test pick up + put down
         # indexed by position in the grid, (x,y)
-        # conveyor images are 70 x 70, so that's our grid
+        x = random.randint(1, self.GRID_WIDTH)
+        y = random.randint(1, self.GRID_HEIGHT)
         for i in range(18):
-            x = random.randint(1, self.GRID_WIDTH)
-            y = random.randint(1, self.GRID_HEIGHT)
+            while (x,y) in self.machines:
+                # pick a new coordinate, maybe this one will be blank? :)
+                x = random.randint(1, self.GRID_WIDTH)
+                y = random.randint(1, self.GRID_HEIGHT)
             self.machines[(x,y)] = Conveyor(self, x, y, anchor=(0,30))
     
-        self.machines[(0,5)] = OreChute(self, 0, 5, "copper_ingot", 10, anchor=(0, 70))
-        self.machines[(self.GRID_WIDTH-1,5)] = LoadingDock(self, self.GRID_WIDTH-1, 5, "circuit_board", 8, anchor=(0, 70))
-        self.machines[(5,5)] = StampyThing(self, 5, 5, 
-                                    item_input="copper_ingot", item_output="circuit_board", stamping_time=8,
-                                    anchor=(0, 70))
 
     def point(self, pos, color=(255,0,0)):
         screen.draw.circle(pos, 5, color)
@@ -71,12 +78,18 @@ def draw():
         player.draw()
     for machine in game.machines.values():
         machine.draw()
+    
     # we draw items second, otherwise there's some visible overlap
     # when moving from one conveyor to the next
     for machine in game.machines.values():
         if type(machine) is Conveyor:
             machine.draw_item()
 
+    # finally, highlights over the top
+    for player in game.players.values():
+        player.draw_highlight()
+        
+        
 def update(dt):
     for player in game.players.values():
         player.update(dt)
@@ -92,7 +105,7 @@ def on_joy_button_down(joy, button):
     if button in (joybutton.SIX, joybutton.SEVEN):
         if player_no not in game.players:
             #spawn a new player
-            game.players[player_no] = Player(game, player_no, anchor=(0,70))
+            game.players[player_no] = Player(game, player_no)
         else:
             # remove 'em, but handle the press first, to give us
             # a chance to do things before they're removed
