@@ -40,6 +40,16 @@ class Game(object):
         self.machines[(3,7)] = MachinePart(self, 3, 7, 2, parts={'topright': 'blue_window'}, anchor=(0, 70))
         self.machines[(7,3)] = MachinePart(self, 7, 3, 4, parts={'verytop': 'yellow_light'}, anchor=(0, 70))
 
+        # multimachines as a 3x2 block of chars, each representing 1 machine
+        # Input/output is [1-6][LRTB] for blocks 1-6 and left/right/top/bottom
+        self.multimachines = {
+            'circuit_board': {'machines': '324',
+                              'layout': '32  4 ', # 2x3
+                              'input': ('1L', 'copper_ingot'),
+                              'output': ('5R', 'circuit_board'),
+                             },
+        }
+        
         # random scattering of conveyors for now, to test pick up + put down
         # indexed by position in the grid, (x,y)
         x = random.randint(1, self.GRID_WIDTH)
@@ -82,13 +92,16 @@ def draw():
         player.draw()
     for machine in game.machines.values():
         machine.draw()
-    
+    for machine in game.machines.values():
+        for part in getattr(machine, '_sub_parts', {}).values():
+            part.draw()
+
     # we draw items second, otherwise there's some visible overlap
     # when moving from one conveyor to the next
     for machine in game.machines.values():
         if type(machine) is Conveyor:
             machine.draw_item()
-
+            
     # finally, highlights over the top
     for player in game.players.values():
         player.draw_highlight()

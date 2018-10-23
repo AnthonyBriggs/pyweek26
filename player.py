@@ -39,6 +39,8 @@ class Player(Actor):
         
         if self.carrying:
             self.carrying.draw()
+            for part in getattr(self.carrying, '_sub_parts', {}).values():
+                part.draw()
         
         #self.game.point(self.pos)
         self.game.point((self.x, self.y))
@@ -186,9 +188,12 @@ class Player(Actor):
                 my_machine.x, my_machine.y = self.game.convert_from_grid(*my_grid)
                 my_machine.carried = False
                 my_machine.direction = self.player_facing()
+                if hasattr(my_machine, 'on_put_down'):
+                    my_machine.on_put_down()
                 #print("Putting down", my_machine, "at", my_grid, "facing", my_machine.direction)
                 self.carrying = False
                 self.putting_down = False
+
     
     def handle_axis(self, axis, value):
         #print("Player {} moved axis {}: {}".format(self, axis, value))

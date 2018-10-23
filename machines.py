@@ -301,8 +301,6 @@ class MachinePart(Actor):
     
     def draw(self):
         super().draw()
-        for part in self._sub_parts.values():
-            part.draw()
         self.game.point(self.pos, (255,0,255))
         
     def update(self, dt):
@@ -316,10 +314,44 @@ class MachinePart(Actor):
         return False
         
     def on_put_down(self):
-        """Check to see if the MultiMachine is complete."""
-        pass
-
-
+        """Check to see if there's a complete MultiMachine."""
+        print("Checking machine", self.number, "for matches.")
+        potential = [(k,v) for k, v in self.game.multimachines.items()
+                        if str(self.number) in v['machines']]
+        # find ourselves in the layout
+        for machine_type, layout in potential:
+            valid = self.check_layout(machine_type, layout)
+            if valid:
+                print("Multimachine {} detected!".format(machine_type))
+            
+    
+    def check_layout(self, machine_type, layout):
+        print("Checking machine type", machine_type, layout['layout'])
+        coord = layout['layout'].index(str(self.number))
+        x = coord % 3
+        y = coord // 3
+        top_left = (self.grid_x - x, self.grid_y - y)
+        
+        for y in (0, 1):
+            for x in (0, 1, 2):
+                machine = self.game.machines.get((top_left[0]+x, top_left[1]+y), None)
+                print("Checking", x+y*3, 'vs.', machine)
+                that_machine = layout['layout'][x+y*3]
+                if that_machine == ' ' and machine is None:
+                    # blanks match up
+                    print("ok")
+                    continue
+                if that_machine == ' ' and getattr(machine, 'number', False):
+                    # machine where there should be a space?
+                    # False might cause trouble / be counterintuitive
+                    return False
+                if that_machine != ' ' and getattr(machine, 'number', '-1') != int(that_machine):
+                    # Not the right machine type
+                    return False
+                print("ok")
+        return True
+        
+        
 class MachineSubPart(Actor):
     """Part of a machine, like a light or a screen. 
     Mainly used to identify bits of a larger one."""
