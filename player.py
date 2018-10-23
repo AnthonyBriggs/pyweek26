@@ -158,6 +158,11 @@ class Player(Actor):
                     #print("Picking up", machine)
                     machine.carried = True
                     self.carrying = machine
+                    if getattr(machine, 'multimachine', None):
+                        # need to disable the multimachine
+                        mm = machine.multimachine
+                        mm.switch_off()
+                        del mm
                     del self.game.machines[my_grid]     # dangerous! 
                 else:
                     # nope, there's nothing there

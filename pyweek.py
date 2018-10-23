@@ -42,13 +42,14 @@ class Game(object):
 
         # multimachines as a 3x2 block of chars, each representing 1 machine
         # Input/output is [1-6][LRTB] for blocks 1-6 and left/right/top/bottom
-        self.multimachines = {
+        self.multimachine_configs = {
             'circuit_board': {'machines': '324',
                               'layout': '32  4 ', # 2x3
                               'input': ('1L', 'copper_ingot'),
                               'output': ('5R', 'circuit_board'),
                              },
         }
+        self.multimachines = []
         
         # random scattering of conveyors for now, to test pick up + put down
         # indexed by position in the grid, (x,y)
@@ -111,7 +112,8 @@ def update(dt):
         player.update(dt)
     for machine in game.machines.values():
         machine.update(dt)
-
+    for multimachine in game.multimachines:
+        multimachine.update(dt)
 
 def on_joy_button_down(joy, button):
     #print("Mu button down:", joy, button)

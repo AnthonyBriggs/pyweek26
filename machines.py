@@ -1,3 +1,4 @@
+import random
 import sys
 
 from pgzero.actor import Actor
@@ -280,7 +281,7 @@ class MachinePart(Actor):
         self.item = None
         self.item_input = None
         self.item_output = None
-        self.activated = False
+        self.multimachine = None
         
         # Used for timing and animation progress
         self.manuf_time = 0
@@ -316,14 +317,17 @@ class MachinePart(Actor):
     def on_put_down(self):
         """Check to see if there's a complete MultiMachine."""
         print("Checking machine", self.number, "for matches.")
-        potential = [(k,v) for k, v in self.game.multimachines.items()
+        potential = [(k,v) for k, v in self.game.multimachine_configs.items()
                         if str(self.number) in v['machines']]
         # find ourselves in the layout
         for machine_type, layout in potential:
-            valid = self.check_layout(machine_type, layout)
-            if valid:
-                print("Multimachine {} detected!".format(machine_type))
-            
+            machines = self.check_layout(machine_type, layout)
+            if machines:
+                print("Multimachine '{}' detected!".format(machine_type))
+                mm = MultiMachine(self.game, machine_type, machines)
+                self.game.multimachines.append(mm)
+                print("Multimachine created! ({} machines)".format(len(mm.machines)))
+                return
     
     def check_layout(self, machine_type, layout):
         print("Checking machine type", machine_type, layout['layout'])
@@ -331,6 +335,7 @@ class MachinePart(Actor):
         x = coord % 3
         y = coord // 3
         top_left = (self.grid_x - x, self.grid_y - y)
+        machines = []
         
         for y in (0, 1):
             for x in (0, 1, 2):
@@ -344,12 +349,16 @@ class MachinePart(Actor):
                 if that_machine == ' ' and getattr(machine, 'number', False):
                     # machine where there should be a space?
                     # False might cause trouble / be counterintuitive
+                    # May also match multiple machines at once + flip/flop :D
                     return False
                 if that_machine != ' ' and getattr(machine, 'number', '-1') != int(that_machine):
                     # Not the right machine type
                     return False
+                
+                if getattr(machine, 'number', -1) > 0:
+                    machines.append(machine)
                 print("ok")
-        return True
+        return machines
         
         
 class MachineSubPart(Actor):
@@ -361,7 +370,6 @@ class MachineSubPart(Actor):
         self.name = name
         self.position = position  # (x,y) relative to the main machine
         image_name = 'machines/machine_part_{}'.format(self.name)
-        print(image_name, scale)
         super().__init__(image_name, *args, **kwargs)
         self.scale = scale
         self.anchor = (0, 35)
@@ -386,8 +394,32 @@ class MultiMachine(object):
     
     Needs to store some configuration like >121> or >13
                                                      12> """
-    def __init__(self, name):
+    def __init__(self, game, name, machines):
+        self.game = game
         self.name = name
+        self.machines = machines
+        for machine in machines:
+            machine.multimachine = self
+        self.next_wiggle = 0.1
+        
+    def update(self, dt):
+        self.next_wiggle -= dt
+        if self.next_wiggle < 0:
+            # wiggle the machines around so it looks active
+            wiggle = (-2, -1, -1, 0, 0, 0, 1, 1, 2)
+            for machine in self.machines:
+                machine.x, machine.y = self.game.convert_from_grid(machine.grid_x, machine.grid_y)
+                machine.x += random.choice(wiggle)
+                machine.y += random.choice(wiggle)
+                machine.update(dt)
+            self.next_wiggle = 0.1
+    
+    def switch_off(self):
+        # restore the positions of the parts
+        for machine in self.machines:
+            machine.x, machine.y = self.game.convert_from_grid(machine.grid_x, machine.grid_y)
+            machine.multimachine = None
+        self.machines = []
     
     def receive_item_push(self, item, from_direction):
         """Receive an item from one of our component parts, or return False."""
