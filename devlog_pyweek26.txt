@@ -19,6 +19,30 @@ https://pygame-zero.readthedocs.io/en/stable/hooks.html
 https://pygame-zero.readthedocs.io/en/stable/builtins.html
 
 
+2018-10-23 9.21PM (T+58hrs)
+---------------------------
+
+Split off a small bit of functionality - namely, making the Machines identifiable by gluing small "submachines" onto them. You can see the effect in the screenshot (day3_1) - each machine has a light on top, or a control panel or window in the side. This will help when people are assembling machines from a "blueprint" to get a specific item.
+
+
+2018-10-23 6PM (T+55hrs)
+------------------------
+
+So I may have bitten off a bit more than I can comfortably chew with what I've termed "Multimachines". Basically a larger version of the current "StampyThing", they're machines composed of more than one block, with sub parts so that you can identify them. When they're arranged in the correct fashion, the Multimachine activates and starts producing stuff.
+
+Of course, all this needs configuration and arranging and so on, plus you need to detect when a multimachine's configured, keep all the sub parts in the right spot when updating, only accept items in particular spots, output in particular spots, etc. etc.
+
+Stopping to make dinner now, we'll see how far I can get tonight without going too mad. It's a bigger job than I thought going in, but then it usually is, isn't it? :P
+
+
+2018-10-23 2.30PM (T+51hrs)
+---------------------------
+
+So I spent this morning pulling out huge chunks of the UI code that I wrote, and replacing it with something simpler. The original intention was to fudge things in favour of making the game easier to use, but that kinda backfired. So, no major screenshots or anything like that this time, but the player code seems to be a bit cleaner now.
+
+One thing I'm noticing is that the machine seems to be pretty small, so maybe that's something to fix next?
+
+
 2018-10-22 11.40PM (T+36hrs)
 ----------------------------
 

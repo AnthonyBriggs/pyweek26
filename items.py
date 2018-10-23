@@ -9,10 +9,11 @@ class Item(Actor):
     Item anchors should be in the bottom middle of the image,
     so that they sit on the conveyor in convincing fashion :)"""
     
-    def __init__(self, name, *args, **kwargs):
+    def __init__(self, name, scale=1.0, *args, **kwargs):
         self.name = name
         image_name = 'items/{}'.format(self.name)
         super().__init__(image_name, *args, **kwargs)
+        self.scale = scale
         self.x = -100
         self.y = -100
 

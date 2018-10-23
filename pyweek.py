@@ -4,7 +4,7 @@ import random
 import sys
 
 from player import Player
-from machines import Conveyor, OreChute, LoadingDock, StampyThing
+from machines import Conveyor, OreChute, LoadingDock, StampyThing, MachinePart
 
 HEIGHT = 10 * 70
 WIDTH = 12 * 70
@@ -36,6 +36,10 @@ class Game(object):
                                     stamping_time=8,
                                     anchor=(0, 70))
         
+        self.machines[(7,8)] = MachinePart(self, 7, 8, 3, parts={'topleft': 'screen'}, anchor=(0, 70))
+        self.machines[(3,7)] = MachinePart(self, 3, 7, 2, parts={'topright': 'blue_window'}, anchor=(0, 70))
+        self.machines[(7,3)] = MachinePart(self, 7, 3, 4, parts={'verytop': 'yellow_light'}, anchor=(0, 70))
+
         # random scattering of conveyors for now, to test pick up + put down
         # indexed by position in the grid, (x,y)
         x = random.randint(1, self.GRID_WIDTH)
@@ -88,7 +92,6 @@ def draw():
     # finally, highlights over the top
     for player in game.players.values():
         player.draw_highlight()
-        
         
 def update(dt):
     for player in game.players.values():

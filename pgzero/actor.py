@@ -78,6 +78,7 @@ class Actor:
     _anchor = _anchor_value = (0, 0)
     _angle = 0.0
     _flip = (False, False)
+    _scale = 1.0
     
     def __init__(self, image, pos=POS_TOPLEFT, anchor=ANCHOR_CENTER, **kwargs):
         self._handle_unexpected_kwargs(kwargs)
@@ -130,6 +131,7 @@ class Actor:
         self.anchor = anchor
         
         self.flip = (False, False)
+        self.scale = 1.0
         
         symbolic_pos_args = {
             k: kwargs[k] for k in kwargs if k in SYMBOLIC_POSITIONS}
@@ -195,7 +197,15 @@ class Actor:
     @flip.setter
     def flip(self, horizontal, vertical=False):
         self._flip = (bool(horizontal), bool(vertical))
-        
+    
+    @property
+    def scale(self):
+        return self._scale
+    
+    @scale.setter
+    def scale(self, scale):
+        self._scale = float(scale)
+    
     @property
     def pos(self):
         px, py = self.topleft
@@ -243,11 +253,21 @@ class Actor:
         self.pos = p
 
     def draw(self):
-        if self._flip == (False, False):
+        if self._flip == (False, False) and self._scale == 1.0:
             game.screen.blit(self._surf, self.topleft)
-        else:
-            flipped = pygame.transform.flip(self._surf, *self.flip)
-            game.screen.blit(flipped, self.topleft)
+            return
+        
+        new_surf = self._surf.copy()
+        if self.flip != (False, False):
+            new_surf = pygame.transform.flip(new_surf, *self.flip)
+        if self.scale != 1.0:
+            x,y = self._orig_surf.get_size()
+            new_x = int(x * self._scale)
+            new_y = int(y * self._scale)
+            #print("scaling image:", self.scale, (new_x,new_y))
+            new_surf = pygame.transform.scale(new_surf, (new_x, new_y))
+        
+        game.screen.blit(new_surf, self.topleft)
 
 
     def angle_to(self, target):

@@ -215,7 +215,8 @@ class StampyThing(Actor):
         self.next_stamp = stamping_time
     
     def __str__(self):
-        return "<Stampy Thing, position: {}, item_types: {} -> {}>".format(self.pos, self.item_input, self.item_output)
+        return "<Stampy Thing, position: {}, item_types: {} -> {}>".format(
+                    self.pos, self.item_input, self.item_output)
     
     def draw(self):
         super().draw()
@@ -229,7 +230,7 @@ class StampyThing(Actor):
             if self.item:
                 if self.item.name == self.item_input:
                     # Stamp it!
-                    self.item = Item(self.item_output, anchor=(60, 60))
+                    self.item = Item(self.item_output, scale=0.5, anchor=(35, 40))
                 # push it out the bottom side
                 conveyor = self.game.machines.get((self.grid_x, self.grid_y+1), None)
                 if conveyor:
@@ -250,3 +251,116 @@ class StampyThing(Actor):
         # ok, we'll accept an item, but won't necessarily stamp it yet
         self.item = item
         return True
+        
+class MachinePart(Actor):
+    """A visible part of a MultiMachine. Will consist of a box + some parts,
+    the parts will animate somehow when the machine is working."""
+    
+    # based on bottom left? pos + scale
+    part_positions = {
+        'topleft': ((10,25), 0.4),
+        'topright': ((27,23), 0.4),
+        'bottomleft': ((10,10), 0.4),
+        'bottomright': ((25,10), 0.4),
+        'verytop': ((17, 70), 0.5),
+        'verytopwide': ((0, 70), 1.0),
+        'hazard': ((0,0), 1.0),
+    }
+    
+    def __init__(self, game, grid_x, grid_y, number, parts={}, *args, **kwargs):
+        self.grid_x = grid_x
+        self.grid_y = grid_y
+        self.game = game
+        self.number = number
+        image_name = 'machines/machine_{}'.format(self.number)
+        super().__init__(image_name, *args, **kwargs)
+        self.x, self.y = game.convert_from_grid(grid_x, grid_y)
+        
+        # These will be set by the MultiMachine
+        self.item = None
+        self.item_input = None
+        self.item_output = None
+        self.activated = False
+        
+        # Used for timing and animation progress
+        self.manuf_time = 0
+        self.current_manuf = 0
+
+        # init subparts here??
+        # eg. Red light top left, computer bottom right, saw_blade left?
+        #       {'topleft': <red_light part>, ...}
+        self._sub_parts = {}        
+        for position, part_name in parts.items():
+            pos, scale = self.part_positions[position]
+            print("Adding part", part_name, "at", pos, "scale:", scale)
+            self._sub_parts[position] = MachineSubPart(self.game, part_name, pos, scale)
+    
+    def __str__(self):
+        return "<Machine Part {}, position: {}, item_types: {} -> {}>".format(
+                    self.number, self.pos, self.item_input, self.item_output)
+    
+    def draw(self):
+        super().draw()
+        for part in self._sub_parts.values():
+            part.draw()
+        self.game.point(self.pos, (255,0,255))
+        
+    def update(self, dt):
+        for part in self._sub_parts.values():
+            # update position based on location (eg. topleft)
+            part.x = self.x + part.position[0]
+            part.y = self.y - part.position[1]
+
+    def receive_item_push(self, item, from_direction):
+        """Receive an item from another machine, or return False."""
+        return False
+        
+    def on_put_down(self):
+        """Check to see if the MultiMachine is complete."""
+        pass
+
+
+class MachineSubPart(Actor):
+    """Part of a machine, like a light or a screen. 
+    Mainly used to identify bits of a larger one."""
+    
+    def __init__(self, game, name, position, scale, *args, **kwargs):
+        self.game = game
+        self.name = name
+        self.position = position  # (x,y) relative to the main machine
+        image_name = 'machines/machine_part_{}'.format(self.name)
+        print(image_name, scale)
+        super().__init__(image_name, *args, **kwargs)
+        self.scale = scale
+        self.anchor = (0, 35)
+        print(self.height)
+        
+    def __str__(self):
+        return "<Machine Sub Part {}, position: {}, scale: {}>".format(
+                    self.number, self.pos, self.scale)
+
+    def draw(self):
+        super().draw()
+        self.game.point(self.pos, (255,0,255))
+
+    def update(self, dt):
+        pass
+
+
+class MultiMachine(object):
+    """A meta-machine, consisting of multiple parts. When the parts are 
+    put together in the right way, it gives a visible indication of
+    activation and starts producing stuff.
+    
+    Needs to store some configuration like >121> or >13
+                                                     12> """
+    def __init__(self, name):
+        self.name = name
+    
+    def receive_item_push(self, item, from_direction):
+        """Receive an item from one of our component parts, or return False."""
+    
+    def send_output(self):
+        """ """
+    def activate(self):
+        """Switch on all our parts once we're in the right place."""

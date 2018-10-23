@@ -27,7 +27,7 @@ class Player(Actor):
     def spawn(self):
         # TODO: find a blank spot on the screen to spawn into? 
         #       Or just have a spawn spot in the top left (clock on?)
-        self.pos = 100, 100
+        self.pos = 10,10
     
     def draw(self):
         if self.speed == [0,0]:
@@ -57,7 +57,7 @@ class Player(Actor):
             elif direction == 3: direction = 1
             
             self.direction.image = 'players/direction_{}'.format(direction)
-            print(self.direction.image, self.player_facing(), pos)
+            #print(self.direction.image, self.player_facing(), pos)
             self.direction.pos = pos
             self.direction.draw()
         elif self.carrying or machine:
@@ -92,6 +92,7 @@ class Player(Actor):
             self.bottom = self.game.HEIGHT
         
         if self.carrying:
+            self.carrying.update(dt)
             self.carrying.y = self.y + 30
             if self.putting_down:
                 self.carrying.direction = self.player_facing()
@@ -152,7 +153,7 @@ class Player(Actor):
                 my_grid = self.pick_up_space()
                 machine = self.game.machines.get(my_grid, None)
                 if machine:
-                    print("Picking up", machine)
+                    #print("Picking up", machine)
                     machine.carried = True
                     self.carrying = machine
                     del self.game.machines[my_grid]     # dangerous! 
@@ -185,7 +186,7 @@ class Player(Actor):
                 my_machine.x, my_machine.y = self.game.convert_from_grid(*my_grid)
                 my_machine.carried = False
                 my_machine.direction = self.player_facing()
-                print("Putting down", my_machine, "at", my_grid, "facing", my_machine.direction)
+                #print("Putting down", my_machine, "at", my_grid, "facing", my_machine.direction)
                 self.carrying = False
                 self.putting_down = False
     
