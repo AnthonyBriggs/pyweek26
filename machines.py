@@ -2,8 +2,9 @@ import random
 import sys
 
 from pgzero.actor import Actor
-from items import Item
 
+from items import Item
+import data
 
 class Conveyor(Actor):
     def __init__(self, game, grid_x, grid_y, *args, **kwargs):
@@ -76,7 +77,7 @@ class Conveyor(Actor):
                 self.item_pos = self.game.GRID_SIZE
                 # need to push off the end
                 target_grid = self.get_target_grid()
-                conveyor = self.game.machines.get(target_grid, None)
+                conveyor = self.game.map.get(target_grid, None)
                 if conveyor and hasattr(conveyor, 'receive_item_push'):
                     from_direction = [2, 3, 0, 1][self.direction]   # 0123 -> 2301
                     #print("Attempting to push", from_direction, "from", self, "to", conveyor)
@@ -148,7 +149,7 @@ class OreChute(Actor):
             
     def send_ore(self):
         """Ore is sent to the right."""
-        conveyor = self.game.machines.get((self.grid_x + 1, self.grid_y), None)
+        conveyor = self.game.map.get((self.grid_x + 1, self.grid_y), None)
         if conveyor:
             success = conveyor.receive_item_push( Item(self.ore_type, anchor=(12, 26)), from_direction=3 )
             if not success:
@@ -201,60 +202,7 @@ class LoadingDock(Actor):
             return True
         else:
             return False
-            
-class StampyThing(Actor):
-    """Stamps ore into circuit boards."""
-    
-    def __init__(self, game, grid_x, grid_y, item_input, item_output, stamping_time, *args, **kwargs):
-        self.grid_x = grid_x
-        self.grid_y = grid_y
-        self.game = game
-        image_name = 'machines/machine_1'
-        super().__init__(image_name, *args, **kwargs)
-        self.x, self.y = game.convert_from_grid(grid_x, grid_y)
-        self.item = None
-        self.item_input = item_input
-        self.item_output = item_output
-        self.stamping_time = stamping_time
-        self.next_stamp = stamping_time
-        
-    def __str__(self):
-        return "<Stampy Thing, position: {}, item_types: {} -> {}>".format(
-                    self.pos, self.item_input, self.item_output)
-    
-    def draw(self):
-        super().draw()
-        self.game.point(self.pos, (255,255,0))
 
-    def update(self, dt):
-        self.next_stamp -= dt
-        #print("Next stamp in", self.next_stamp)
-        if self.next_stamp <= 0:
-            self.next_stamp = 0
-            if self.item:
-                if self.item.name == self.item_input:
-                    # Stamp it!
-                    self.item = Item(self.item_output, scale=0.5, anchor=(35, 40))
-                # push it out the bottom side
-                conveyor = self.game.machines.get((self.grid_x, self.grid_y+1), None)
-                if conveyor:
-                    success = conveyor.receive_item_push( self.item, from_direction=0 )
-                    if success:
-                        self.item = None
-    
-    def receive_item_push(self, item, from_direction):
-        """Receive an item from another machine, or return False."""
-        #print(item.name, item, self.next_stamp)
-        if self.item:
-            return False
-        if item.name != self.item_input:
-            return False
-        if from_direction != 0:
-            return False
-        
-        # ok, we'll accept an item, but won't necessarily stamp it yet
-        self.item = item
-        return True
         
 class MachinePart(Actor):
     """A visible part of a MultiMachine. Will consist of a box + some parts,
@@ -271,11 +219,12 @@ class MachinePart(Actor):
         'hazard': ((0,0), 1.0),
     }
     
-    def __init__(self, game, grid_x, grid_y, number, parts={}, *args, **kwargs):
+    def __init__(self, game, grid_x, grid_y, number, code, parts={}, *args, **kwargs):
         self.grid_x = grid_x
         self.grid_y = grid_y
         self.game = game
         self.number = number
+        self.code = code
         image_name = 'machines/machine_{}'.format(self.number)
         super().__init__(image_name, *args, **kwargs)
         self.x, self.y = game.convert_from_grid(grid_x, grid_y)
@@ -302,8 +251,8 @@ class MachinePart(Actor):
             self._sub_parts[position] = MachineSubPart(self.game, part_name, pos, scale)
     
     def __str__(self):
-        return "<Machine Part {}, position: {}, item: {}, item_types: {} -> {}>".format(
-                    self.number, self.pos, self.item, self.item_input, self.item_output)
+        return "<Machine Part {}{}, position: ({}, {}), item: {}, item_types: {} -> {}>".format(
+                    self.number, self.code, self.grid_x, self.grid_y, self.item, self.item_input, self.item_output)
     
     def draw(self):
         super().draw()
@@ -318,11 +267,11 @@ class MachinePart(Actor):
         if self.item and self.item_output:
             # try and push out
             target_grid = self.get_target_grid()
-            print(self, "pushing to", target_grid)
-            conveyor = self.game.machines.get(target_grid, None)
+            #print(self, "pushing to", target_grid)
+            conveyor = self.game.map.get(target_grid, None)
             if conveyor and hasattr(conveyor, 'receive_item_push'):
                 #from_direction = [2, 3, 0, 1][self.direction]   # 0123 -> 2301
-                print("Attempting to push", self.direction, "from", self, "to", conveyor)
+                #print("Attempting to push", self.direction, "from", self, "to", conveyor)
                 success = conveyor.receive_item_push(self.item, self.direction)
                 if success:
                     self.item = None
@@ -357,9 +306,12 @@ class MachinePart(Actor):
         
     def on_put_down(self):
         """Check to see if there's a complete MultiMachine."""
-        print("Checking machine", self.number, "for matches.")
-        potential = [(k,v) for k, v in self.game.multimachine_configs.items()
-                        if str(self.number) in v['machines']]
+        print("Checking machine", str(self.number)+self.code, "for matches.")
+        potential = [(k, v) for k, v in data.multimachines.items()
+                        if str(self.code) in v['machines'] and k == 'circuit_board']
+        print(len(potential), "matches found")
+        print([(k, v['machines']) for k, v in potential])
+        
         # find ourselves in the layout
         for machine_type, layout in potential:
             machines = self.check_layout(machine_type, layout)
@@ -397,7 +349,7 @@ class MachinePart(Actor):
                 for machine in machines:
                     if machine is None:
                         continue
-                    print(machine)
+                    #print(machine)
                     dir_ = machine.input_direction or machine.output_direction
                     if dir_ is None:
                         continue
@@ -415,40 +367,60 @@ class MachinePart(Actor):
                     if dir_ == 3:
                         pos = (-70, 70)
                         rotate = 270
-                    print(dir_, pos, rotate)
+                    #print(dir_, pos, rotate)
                     machine._sub_parts['io'] = MachineSubPart(self.game, 'io', pos, 1.0, anchor=(0,70))
                     machine._sub_parts['io'].angle = rotate
-                    print(machine._sub_parts)
+                    #print(machine._sub_parts)
                 return
     
     def check_layout(self, machine_type, layout):
-        print("Checking machine type", machine_type, layout['layout'])
-        coord = layout['layout'].index(str(self.number))
+        print("Checking for machine type '{}' ('{}')".format(machine_type, layout['layout']))
+        coord = layout['layout'].index(self.code)
         x = coord % 3
         y = coord // 3
+        #print(coord, x, y)
         top_left = (self.grid_x - x, self.grid_y - y)
         machines = [None, None, None, None, None, None]
         
+        #debug - very useful, shows pattern from submachine's PoV
+        if 0:
+            for y in (0, 1):
+                output = ""
+                for x in (0, 1, 2):
+                    coords = (top_left[0]+x, top_left[1]+y)
+                    machine = self.game.map.get(coords, None)
+                    if machine:
+                        output += getattr(machine, 'code', '-')
+                    else:
+                        output += '.'
+                print(output)
+            print()
+        
         for y in (0, 1):
             for x in (0, 1, 2):
-                machine = self.game.machines.get((top_left[0]+x, top_left[1]+y), None)
-                print("Checking", x+y*3, 'vs.', machine)
+                coords = (top_left[0]+x, top_left[1]+y)
+                machine = self.game.map.get(coords, None)
                 that_machine = layout['layout'][x+y*3]
+                #print("Checking {} ({}) vs. {} {}".format(that_machine, x+y*3, machine, coords))
                 if that_machine == ' ' and machine is None:
                     # blanks match up
-                    print("ok")
+                    #print(".")
                     continue
-                if that_machine == ' ' and getattr(machine, 'number', False):
+                if that_machine == ' ' and getattr(machine, 'code', False):
                     # machine where there should be a space?
-                    # False might cause trouble / be counterintuitive
+                    # TODO: False might cause trouble / be counterintuitive
                     # May also match multiple machines at once + flip/flop :D
+                    #print(2, ":", getattr(machine, 'code', False))
                     return False
                 if (that_machine != ' ' and 
-                    getattr(machine, 'number', '-1') != int(that_machine)):
+                    getattr(machine, 'code', '.') != that_machine):
                     # Not the right machine type
+                    #print(3, ":", getattr(machine, 'code', '.'), that_machine)
                     return False
                 
-                if getattr(machine, 'number', -1) > 0:
+                #print(4, ":", getattr(machine, 'code', '.'), that_machine)
+
+                if getattr(machine, 'code', '.') in data.machines.keys():
                     machines[x+y*3] = machine
                 print("ok")
         return machines
@@ -470,7 +442,7 @@ class MachineSubPart(Actor):
         
     def __str__(self):
         return "<Machine Sub Part {}, position: {}, scale: {}>".format(
-                    self.number, self.pos, self.scale)
+                    self.name, self.pos, self.scale)
 
     def draw(self):
         super().draw()
@@ -514,7 +486,7 @@ class MultiMachine(object):
                 machine.update(dt)
             self.next_wiggle = 0.1
         self.time -= dt
-        print(self)
+        #print(self)
         self.update_input_outputs()
         
     def update_input_outputs(self):
@@ -552,8 +524,5 @@ class MultiMachine(object):
                 del machine._sub_parts['io']
             
         self.machines = []
-    
-    def produce(self):
-        """If our components have items, and we can push our output somewhere, 
-        then we can produce our output."""
+
         

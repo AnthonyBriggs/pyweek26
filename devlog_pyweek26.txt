@@ -18,6 +18,15 @@ reference:
 https://pygame-zero.readthedocs.io/en/stable/hooks.html
 https://pygame-zero.readthedocs.io/en/stable/builtins.html
 
+2018-10-35 1:45AM
+-----------------
+
+Welp, I got the data driven stuff more-or-less working, though relatively untested. It's recognising the pattern for a circuit board from data, and the whole map is generated from a config, so that's good enough for me, for now.
+
+I was right before - I'm tired and found myself making a bunch of silly mistakes, the main one being that I misread the configuration of the circuit board machine and assembled the machines as CBA, rather than ABC. But I've broken the back of it, I think now, so I'm also glad I pushed on. Shouldn't be too much more debugging from here.
+
+Tomorrow: Levels! :D
+
 
 2018-10-24 11PM
 ---------------

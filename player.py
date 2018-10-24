@@ -48,7 +48,7 @@ class Player(Actor):
     def draw_highlight(self):
         my_grid = self.pick_up_space()
         pos = self.game.convert_from_grid(*my_grid)
-        machine = self.game.machines.get(my_grid, None)
+        machine = self.game.map.get(my_grid, None)
         if self.putting_down and not machine:
             # show a direction arrow
             
@@ -153,7 +153,7 @@ class Player(Actor):
             else:
                 # try to pick up
                 my_grid = self.pick_up_space()
-                machine = self.game.machines.get(my_grid, None)
+                machine = self.game.map.get(my_grid, None)
                 if machine:
                     #print("Picking up", machine)
                     machine.carried = True
@@ -163,7 +163,7 @@ class Player(Actor):
                         mm = machine.multimachine
                         mm.switch_off()
                         del mm
-                    del self.game.machines[my_grid]     # dangerous! 
+                    del self.game.map[my_grid]     # dangerous! 
                 else:
                     # nope, there's nothing there
                     pass
@@ -171,7 +171,7 @@ class Player(Actor):
         if button == joybutton.TWO:
             # debug the conveyors
             my_grid = self.pick_up_space()
-            machine = self.game.machines.get(my_grid, None)
+            machine = self.game.map.get(my_grid, None)
             if machine:
                 print(machine)
             if hasattr(machine, '_sub_parts'):
@@ -181,7 +181,7 @@ class Player(Actor):
     def handle_button_up(self, button):
         if button == joybutton.ZERO and self.carrying and self.putting_down:
             my_grid = self.pick_up_space()
-            machine = self.game.machines.get(my_grid, None)
+            machine = self.game.map.get(my_grid, None)
             if machine:
                 # nope, there's something there
                 self.putting_down = False
@@ -190,7 +190,7 @@ class Player(Actor):
                 # Check which direction the player / player's joystick is facing,
                 # and make the conveyor face that way.
                 my_machine = self.carrying
-                self.game.machines[my_grid] = my_machine
+                self.game.map[my_grid] = my_machine
                 my_machine.grid_x = my_grid[0]
                 my_machine.grid_y = my_grid[1]
                 my_machine.x, my_machine.y = self.game.convert_from_grid(*my_grid)

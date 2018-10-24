@@ -4,7 +4,10 @@ import random
 import sys
 
 from player import Player
-from machines import Conveyor, OreChute, LoadingDock, StampyThing, MachinePart
+from machines import Conveyor, OreChute, LoadingDock, MachinePart
+from items import Item
+import data
+
 
 # Work this out from the size of the screen + go fullscreen?
 HEIGHT = 10 * 70
@@ -16,20 +19,28 @@ class Game(object):
     "Simple class, used to pass globals around :>"
     
     def __init__(self, HEIGHT, WIDTH):
+        # TODO: fullscreen + center integral grid in the window
         self.WIDTH = WIDTH
         self.HEIGHT = HEIGHT
-    
-        # dict of Player objects, indexed by joystick number
-        # might need to map joystick number to player instead, and
-        # start with player 1, etc. - or disable the GCN adapter?
-        self.players = {}
-        self.machines = {}
         
         # conveyor images are 70 x 70, so that's our grid
         self.GRID_SIZE = 70
         self.GRID_WIDTH = int(WIDTH / self.GRID_SIZE)
         self.GRID_HEIGHT = int(HEIGHT / self.GRID_SIZE)
         
+        # dict of Player objects, indexed by joystick number
+        # might need to map joystick number to player instead, and
+        # start with player 1, etc. - or disable the GCN adapter?
+        self.players = {}
+        #self.machines = {} # not needed?
+        self.multimachines = []
+        self.products_required = {}        
+        self.level = 0
+        self.load_level()
+        
+        #TODO: rename self.machines to self.map
+        """
+        # Old hacky init code
         self.machines[(0,5)] = OreChute(self, 0, 5, "copper_ingot", 10, anchor=(0, 70))
         self.machines[(self.GRID_WIDTH-1,5)] = LoadingDock(self, self.GRID_WIDTH-1, 5,
                                                            "circuit_board", 8, anchor=(0, 70))
@@ -64,7 +75,62 @@ class Game(object):
                 x = random.randint(1, self.GRID_WIDTH)
                 y = random.randint(1, self.GRID_HEIGHT)
             self.machines[(x,y)] = Conveyor(self, x, y, anchor=(0,30))
-
+        """
+        
+    def load_level(self, level=None):
+        if level is None:
+            level = self.level
+        level_name = data.level_order[level]
+        this_level = data.levels[level_name]
+        
+        for number, product_name in this_level['products']:
+            self.products_required[product_name] = number
+        
+        self.map = {}
+        # entry door, training manual, etc. (fixtures)
+        
+        # raw material chutes
+        # TODO: ore_time in data??
+        for each_input in this_level['inputs']:
+            y = random.randint(1, self.GRID_HEIGHT - 1)
+            while (0, y) in self.map:
+                y = random.randint(1, self.GRID_HEIGHT - 1)
+            self.map[(0, y)] = OreChute(self, 0, y, each_input, ore_time=7, anchor=(0,70))
+            
+        # loading docks
+        # TODO: loading_time in data??
+        x = self.GRID_WIDTH - 1
+        for number, each_product in this_level['products']:
+            y = random.randint(1, self.GRID_HEIGHT - 1)
+            while (x, y) in self.map:
+                y = random.randint(1, self.GRID_HEIGHT - 1)
+            self.map[(x, y)] = LoadingDock(self, x, y, each_product, loading_time=10, anchor=(0,70))
+        
+        # place machines randomly
+        for machine_code in this_level['machines']:
+            x = random.randint(1, self.GRID_WIDTH - 1)
+            y = random.randint(1, self.GRID_HEIGHT - 1)
+            while (x, y) in self.map:
+                x = random.randint(1, self.GRID_WIDTH - 1)
+                y = random.randint(1, self.GRID_HEIGHT - 1)
+            m_data = data.machines[machine_code]
+            self.map[(x,y)] = MachinePart(self, x, y, m_data['number'], machine_code, parts=m_data['parts'], anchor=(0,70))
+        
+        # conveyors
+        x = random.randint(1, self.GRID_WIDTH - 1)
+        y = random.randint(1, self.GRID_HEIGHT - 1)
+        for i in range(this_level['conveyors']):
+            while (x,y) in self.map:
+                # pick a new coordinate, maybe this one will be blank? :)
+                x = random.randint(1, self.GRID_WIDTH - 1)
+                y = random.randint(1, self.GRID_HEIGHT - 1)
+            self.map[(x,y)] = Conveyor(self, x, y, anchor=(0,30))
+    
+    def show_help(self, thing_type, name):
+        """Switch to help mode, called from the training manual square."""
+        # TODO: pause?
+        pass
+    
     def point(self, pos, color=(255,0,0)):
         screen.draw.circle(pos, 5, color)
         
@@ -76,10 +142,10 @@ class Game(object):
         return (grid_x * self.GRID_SIZE,
                 grid_y * self.GRID_SIZE)
 
+
 game = Game(HEIGHT, WIDTH)
 print("Game initialised")
 
-print(game.convert_from_grid(1,1))
 
 def draw():
     screen.clear()
@@ -93,15 +159,15 @@ def draw():
     # TODO: draw according to grid depth/height in the factory
     for player in game.players.values():
         player.draw()
-    for machine in game.machines.values():
+    for machine in game.map.values():
         machine.draw()
-    for machine in game.machines.values():
+    for machine in game.map.values():
         for part in getattr(machine, '_sub_parts', {}).values():
             part.draw()
 
     # we draw items second, otherwise there's some visible overlap
     # when moving from one conveyor to the next
-    for machine in game.machines.values():
+    for machine in game.map.values():
         if type(machine) is Conveyor:
             machine.draw_item()
             
@@ -112,7 +178,7 @@ def draw():
 def update(dt):
     for player in game.players.values():
         player.update(dt)
-    for machine in game.machines.values():
+    for machine in game.map.values():
         machine.update(dt)
     for multimachine in game.multimachines:
         multimachine.update(dt)
