@@ -19,6 +19,16 @@ https://pygame-zero.readthedocs.io/en/stable/hooks.html
 https://pygame-zero.readthedocs.io/en/stable/builtins.html
 
 
+2018-10-24 11PM
+---------------
+
+So I now have most of the data that I'll need to generate levels entered, and images selected out of Kenney.nl's "generic items" library. I did need to edit a few to make them fit, and created one from whole cloth using Paint.NET :D, but other than that it's been comprehensive enough to use as-is.
+
+I've gone for a broad selection of items, with some relatively complicated build trees. Whether they can actually be built, I'm not sure, but that's what playtesting is for.
+
+Now it's 11pm, and I'm not sure whether I should push on, or go to bed now and be relatively rested for tomorrow. I kinda want to see what the game looks like, and I don't want to get caught having to crunch, but on the other hand I was pretty tired this morning. I'll take a break and see how I feel in 10-15 minutes...
+
+
 2018-10-24 3.03PM
 -----------------
 

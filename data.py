@@ -142,7 +142,91 @@ multimachines = {
     
     
 # machines, number of conveyors, time limit, products needed
+# for now, assume we're placing elements at random.
+level_order = [
+    'Training day',
+    'Probation',
+    'Chop chop!',
+    'eat, work, sleep, repeat',
+    'Cake day',
+    "Don't forget to call your mother!",
+    'Watch me get a promotion',
+    'Employee of the month', ]
+
 levels = {
+    # circuit?
+    'Training day': {
+        'conveyors': 18,
+        'inputs': ['copper_ingot'],
+        'machines': "ABC",
+        'products': [(10, 'circuit_board'),],
+        'help': ['circuit_board'],
+    },
+    
+    # book
+    'Probation': {
+        'conveyors': 16,
+        'inputs': ('paper', 'brown_organic'),
+        'machines': "ABCDE",
+        'products': [(12, 'book'),],
+        'help': ['circuit_board', 'book'],
+    },
 
-
+    # axe
+    'Chop chop!': {
+        'conveyors': 15,
+        'inputs': ('metal', 'brown_organic'),
+        'machines': "ABDEF",
+        'products': [(8, 'axe'),],
+        'help': ['circuit_board', 'book', 'axe'],
+    },
+    
+    # coffee
+    'eat, work, sleep, repeat': {
+        'conveyors': 16,
+        'inputs': ('organic', 'glass', 'metal'),
+        'machines': "ACDEEGF",
+        'products': [(10, 'coffee'),],
+        'help': ['circuit_board', 'book', 'axe', 'bowl', 'coffee'],
+    },
+    
+    # blender
+    'Cake day': {
+        'conveyors': 20,
+        'inputs': ('glass', 'copper_ingot', 'metal'),
+        'machines': "ABDEFGJI",
+        'products': [(15, 'blender'), (15, 'bowl'),],
+        'help': ['circuit_board', 'book', 'axe', 'bowl', 'coffee', 
+                 'motor', 'blender'],
+    },
+    
+    # phone
+    "Don't forget to call your mother!": {
+        'conveyors': 20,
+        'inputs': ('glass', 'copper_ingot', 'metal', 'gold_ingot',),
+        'machines': "JHFAB ABCD I",
+        'products': [(10, 'tv'),],
+        'help': ['circuit_board', 'book', 'axe', 'bowl', 'coffee', 
+                'motor', 'blender', 'case', 'tv', 'phone'],
+    },
+    
+    # tv
+    'Watch me get a promotion': {
+        'conveyors': 20,
+        'inputs': ('glass', 'copper_ingot', 'metal'),
+        'machines': "KIGE AGJ ABCD",
+        'products': [(10, 'tv'),],
+        'help': ['circuit_board', 'book', 'axe', 'bowl', 'coffee', 
+                'motor', 'blender', 'case', 'tv'],
+    },
+    
+    # computer
+    'Employee of the month': {
+        'conveyors': 20,
+        'inputs': ('metal', 'copper_ingot', 'gold_ingot', 'copper_ingot'),
+        'machines': "FGHIJK AGJ DFG BC", # missing second D, muahaha
+        'products': [(5, 'computer'), (10, 'graphics card'),],
+        'help': ['circuit_board', 'book', 'axe', 'bowl', 'coffee', 
+                 'motor', 'blender', 'case', 'tv', 'motherboard', 'computer'],
+    },
 }
