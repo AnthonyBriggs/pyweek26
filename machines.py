@@ -25,7 +25,8 @@ class Conveyor(Actor):
         
         
     def __str__(self):
-        return "<Conveyor, position: {}, item:{}/{}, direction: {}>".format(self.pos, self.item, self.item_pos, self.direction)
+        return "<Conveyor, position: {}, item:{}/{}, direction: {}>".format(
+                    self.pos, self.item, self.item_pos, self.direction)
     
     def draw(self):
         if self.direction in (0, 2):
@@ -53,10 +54,12 @@ class Conveyor(Actor):
             self.item.pos = (self.x + self.item_pos, self.y - 28)
         if self.direction == 2:
             # top to bottom
-            self.item.pos = (self.x + 32, self.y - self.game.GRID_SIZE + self.item_pos + 12)
+            self.item.pos = (self.x + 32, 
+                             self.y - self.game.GRID_SIZE + self.item_pos + 12)
         if self.direction == 3:
             # right to left
-            self.item.pos = (self.x + self.game.GRID_SIZE - self.item_pos, self.y - 28)
+            self.item.pos = (self.x + self.game.GRID_SIZE - self.item_pos, 
+                             self.y - 28)
 
         self.item.draw()
         self.game.point(self.item.pos, (0,255,255))
@@ -74,7 +77,7 @@ class Conveyor(Actor):
                 # need to push off the end
                 target_grid = self.get_target_grid()
                 conveyor = self.game.machines.get(target_grid, None)
-                if conveyor:
+                if conveyor and hasattr(conveyor, 'receive_item_push'):
                     from_direction = [2, 3, 0, 1][self.direction]   # 0123 -> 2301
                     #print("Attempting to push", from_direction, "from", self, "to", conveyor)
                     success = conveyor.receive_item_push(self.item, from_direction)
@@ -214,7 +217,7 @@ class StampyThing(Actor):
         self.item_output = item_output
         self.stamping_time = stamping_time
         self.next_stamp = stamping_time
-    
+        
     def __str__(self):
         return "<Stampy Thing, position: {}, item_types: {} -> {}>".format(
                     self.pos, self.item_input, self.item_output)
@@ -280,7 +283,9 @@ class MachinePart(Actor):
         # These will be set by the MultiMachine
         self.item = None
         self.item_input = None
+        self.input_direction = None
         self.item_output = None
+        self.output_direction = None
         self.multimachine = None
         
         # Used for timing and animation progress
@@ -297,22 +302,58 @@ class MachinePart(Actor):
             self._sub_parts[position] = MachineSubPart(self.game, part_name, pos, scale)
     
     def __str__(self):
-        return "<Machine Part {}, position: {}, item_types: {} -> {}>".format(
-                    self.number, self.pos, self.item_input, self.item_output)
+        return "<Machine Part {}, position: {}, item: {}, item_types: {} -> {}>".format(
+                    self.number, self.pos, self.item, self.item_input, self.item_output)
     
     def draw(self):
         super().draw()
         self.game.point(self.pos, (255,0,255))
-        
+                
     def update(self, dt):
         for part in self._sub_parts.values():
             # update position based on location (eg. topleft)
             part.x = self.x + part.position[0]
             part.y = self.y - part.position[1]
-
+        
+        if self.item and self.item_output:
+            # try and push out
+            target_grid = self.get_target_grid()
+            print(self, "pushing to", target_grid)
+            conveyor = self.game.machines.get(target_grid, None)
+            if conveyor and hasattr(conveyor, 'receive_item_push'):
+                #from_direction = [2, 3, 0, 1][self.direction]   # 0123 -> 2301
+                print("Attempting to push", self.direction, "from", self, "to", conveyor)
+                success = conveyor.receive_item_push(self.item, self.direction)
+                if success:
+                    self.item = None
+                    self.item_pos = 0
+                else:
+                    #stalled
+                    pass
+    
+    def get_target_grid(self):
+        """Where is this conveyor pushing to?"""
+        if self.output_direction == 0:
+            return (self.grid_x, self.grid_y - 1)
+        if self.output_direction == 1:
+            return (self.grid_x + 1, self.grid_y)
+        if self.output_direction == 2:
+            return (self.grid_x, self.grid_y + 1)
+        if self.output_direction == 3:
+            return (self.grid_x - 1, self.grid_y)
+    
     def receive_item_push(self, item, from_direction):
         """Receive an item from another machine, or return False."""
-        return False
+        if self.item:
+            return False
+        if item.name != self.item_input:
+            return False
+        if from_direction != self.input_direction:
+            return False
+        
+        # ok, we'll accept an item. Processing is handled by the parent MultiMachine.
+        self.item = item
+        return True
         
     def on_put_down(self):
         """Check to see if there's a complete MultiMachine."""
@@ -324,9 +365,58 @@ class MachinePart(Actor):
             machines = self.check_layout(machine_type, layout)
             if machines:
                 print("Multimachine '{}' detected!".format(machine_type))
-                mm = MultiMachine(self.game, machine_type, machines)
+                mm = MultiMachine(self.game, machine_type, machines, layout['time'])
                 self.game.multimachines.append(mm)
                 print("Multimachine created! ({} machines)".format(len(mm.machines)))
+                
+                # add inputs and outputs
+                # Input/output is [1-6][LRTB] for blocks 1-6 and left/right/top/bottom
+                dir_lookup = "TRBL"
+                print("  ", layout['input'])
+                for direction, item_type in layout['input']:
+                    index, dir_ = direction  # 1L
+                    index = int(index)
+                    machine = machines[index]
+                    if machine is not None:
+                        machine.input_direction = dir_lookup.index(dir_)
+                        machine.item_input = item_type
+                        print("  added input", machine.input_direction, machine.item_input)
+                
+                # only one output
+                direction, item_type = layout['output']
+                print("  ", layout['output'])
+                index, dir_ = direction  # 1L
+                index = int(index)
+                machine = machines[index]
+                if machine is not None:
+                    machine.output_direction = dir_lookup.index(dir_)
+                    machine.item_output = item_type
+                    print("  added output", machine.input_direction, machine.item_output)
+                
+                # Add input and output chutes as visual cues
+                for machine in machines:
+                    if machine is None:
+                        continue
+                    print(machine)
+                    dir_ = machine.input_direction or machine.output_direction
+                    if dir_ is None:
+                        continue
+                    if dir_ == 0:
+                        pos = (0, 70)
+                        rotate = 0
+                    if dir_ == 1:
+                        pos = (140, 0)
+                        rotate = 90
+                    if dir_ == 2:
+                        pos = (0, -70)
+                        rotate = 180
+                    if dir_ == 3:
+                        pos = (-70, 70)
+                        rotate = 270
+                    print(dir_, pos, rotate)
+                    machine._sub_parts['io'] = MachineSubPart(self.game, 'io', pos, 1.0, anchor=(0,70))
+                    machine._sub_parts['io'].angle = rotate
+                    print(machine._sub_parts)
                 return
     
     def check_layout(self, machine_type, layout):
@@ -335,7 +425,7 @@ class MachinePart(Actor):
         x = coord % 3
         y = coord // 3
         top_left = (self.grid_x - x, self.grid_y - y)
-        machines = []
+        machines = [None, None, None, None, None, None]
         
         for y in (0, 1):
             for x in (0, 1, 2):
@@ -351,12 +441,13 @@ class MachinePart(Actor):
                     # False might cause trouble / be counterintuitive
                     # May also match multiple machines at once + flip/flop :D
                     return False
-                if that_machine != ' ' and getattr(machine, 'number', '-1') != int(that_machine):
+                if (that_machine != ' ' and 
+                    getattr(machine, 'number', '-1') != int(that_machine)):
                     # Not the right machine type
                     return False
                 
                 if getattr(machine, 'number', -1) > 0:
-                    machines.append(machine)
+                    machines[x+y*3] = machine
                 print("ok")
         return machines
         
@@ -372,8 +463,8 @@ class MachineSubPart(Actor):
         image_name = 'machines/machine_part_{}'.format(self.name)
         super().__init__(image_name, *args, **kwargs)
         self.scale = scale
-        self.anchor = (0, 35)
-        print(self.height)
+        if 'anchor' not in kwargs:
+            self.anchor = (0, 35)
         
     def __str__(self):
         return "<Machine Sub Part {}, position: {}, scale: {}>".format(
@@ -381,7 +472,7 @@ class MachineSubPart(Actor):
 
     def draw(self):
         super().draw()
-        self.game.point(self.pos, (255,0,255))
+        self.game.point(self.pos, (255,255,0))
 
     def update(self, dt):
         pass
@@ -394,14 +485,21 @@ class MultiMachine(object):
     
     Needs to store some configuration like >121> or >13
                                                      12> """
-    def __init__(self, game, name, machines):
+    def __init__(self, game, name, machines, production_time):
         self.game = game
         self.name = name
-        self.machines = machines
-        for machine in machines:
+        self.production_time = production_time
+        self.time = production_time
+        self.machines = [m for m in machines if m is not None]
+        for machine in self.machines:
             machine.multimachine = self
+        self.update_input_outputs()
         self.next_wiggle = 0.1
-        
+
+    def __str__(self):
+        return "<MultiMachine {}, machines: {}, next production: {}/{}>".format(
+                    self.name, len(self.machines), self.time, self.production_time)
+
     def update(self, dt):
         self.next_wiggle -= dt
         if self.next_wiggle < 0:
@@ -413,18 +511,47 @@ class MultiMachine(object):
                 machine.y += random.choice(wiggle)
                 machine.update(dt)
             self.next_wiggle = 0.1
+        self.time -= dt
+        print(self)
+        self.update_input_outputs()
+        
+    def update_input_outputs(self):
+        """check production - do we have all our inputs?"""
+        self.input_machines = [m for m in self.machines if m.input_direction]
+        self.output_machines = [m for m in self.machines if m.output_direction]
+        empty_inputs = [m for m in self.input_machines if not m.item]
+        full_outputs = [m for m in self.output_machines if m.item]
+        if empty_inputs:
+            # don't start production without all the parts
+            self.time = self.production_time
+        if not empty_inputs and not full_outputs and self.time < 0:
+            # can make a thing!
+            for m in self.input_machines:
+                m.item = None
+            for m in self.output_machines:
+                # TODO: Items should know what their scale + anchors are
+                m.item = Item(m.item_output, scale=0.5, anchor=(35, 40))
+                # the output machine part handles pushing
+            self.time = self.production_time
     
     def switch_off(self):
-        # restore the positions of the parts
+        """Restore our parts back to their original independent machines."""
         for machine in self.machines:
             machine.x, machine.y = self.game.convert_from_grid(machine.grid_x, machine.grid_y)
+            machine.input_direction = None
+            machine.item_input = None
+            machine.output_direction = None
+            machine.item_output = None
+            #machine.item = None    # probably too harsh :)
             machine.multimachine = None
+            
+            # remove input/output chutes
+            if 'io' in machine._sub_parts:
+                del machine._sub_parts['io']
+            
         self.machines = []
     
-    def receive_item_push(self, item, from_direction):
-        """Receive an item from one of our component parts, or return False."""
-    
-    def send_output(self):
-        """ """
-    def activate(self):
-        """Switch on all our parts once we're in the right place."""
+    def produce(self):
+        """If our components have items, and we can push our output somewhere, 
+        then we can produce our output."""
+        

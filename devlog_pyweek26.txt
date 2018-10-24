@@ -19,6 +19,25 @@ https://pygame-zero.readthedocs.io/en/stable/hooks.html
 https://pygame-zero.readthedocs.io/en/stable/builtins.html
 
 
+2018-10-24 3.03PM
+-----------------
+
+Well, that took a while. There weren't too many other chunks I could break off, so I ended up tackling all the bugs one after the other. Multimachines now work, and can produce circuit boards from ingots, but I suspect that there are other bugs and a bunch of refactoring in the immediate future.
+
+To be fair, I did spend some time tweaking things, like adding visible hopper entries to the machine so that it's more obvious where to send the stuff, and it seems to work well.
+
+For now though, the bulk of the game mechanics are in and it's time to start thinking about how the game itself will work, and adding game data: levels, items, more machines, etc, etc.  I don't want to get caught by leaving everything until the last minute and having to crunch overnight...
+
+2018-10-23 12.10AM (T+)
+--------------------------
+
+Multimachines are now working, mostly. You can specify combinations of machines and their input/output, and when you link them together properly, they'll start vibrating like they're working. You can see that the machines are a few pixels apart in the screen shot (day3_2) - they move a random number of pixels in the x and y several times a second. They don't actually make anything yet; that'll have to wait until tomorrow.
+
+And I'm sure there are more bugs to be found :)
+
+Update: Added an animated gif (machine_running_day3_3).
+
+
 2018-10-23 9.21PM (T+58hrs)
 ---------------------------
 

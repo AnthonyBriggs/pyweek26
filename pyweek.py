@@ -45,8 +45,9 @@ class Game(object):
         self.multimachine_configs = {
             'circuit_board': {'machines': '324',
                               'layout': '32  4 ', # 2x3
-                              'input': ('1L', 'copper_ingot'),
-                              'output': ('5R', 'circuit_board'),
+                              'input': [('0L', 'copper_ingot')],
+                              'output': ('4R', 'circuit_board'),
+                              'time': 7,
                              },
         }
         self.multimachines = []

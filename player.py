@@ -174,6 +174,9 @@ class Player(Actor):
             machine = self.game.machines.get(my_grid, None)
             if machine:
                 print(machine)
+            if hasattr(machine, '_sub_parts'):
+                for part in machine._sub_parts.values():
+                    part.angle += 45
         
     def handle_button_up(self, button):
         if button == joybutton.ZERO and self.carrying and self.putting_down:
