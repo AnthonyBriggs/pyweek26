@@ -6,9 +6,11 @@ import sys
 from player import Player
 from machines import Conveyor, OreChute, LoadingDock, StampyThing, MachinePart
 
+# Work this out from the size of the screen + go fullscreen?
 HEIGHT = 10 * 70
 WIDTH = 12 * 70
 
+# TODO (wishlist): more alien types (8?)
 
 class Game(object):
     "Simple class, used to pass globals around :>"
@@ -62,7 +64,6 @@ class Game(object):
                 x = random.randint(1, self.GRID_WIDTH)
                 y = random.randint(1, self.GRID_HEIGHT)
             self.machines[(x,y)] = Conveyor(self, x, y, anchor=(0,30))
-    
 
     def point(self, pos, color=(255,0,0)):
         screen.draw.circle(pos, 5, color)

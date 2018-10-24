@@ -401,6 +401,8 @@ class MachinePart(Actor):
                     dir_ = machine.input_direction or machine.output_direction
                     if dir_ is None:
                         continue
+                    # These rotation values are a chute-specific hack.
+                    # TODO: maybe sticking the anchor in the center would work better?
                     if dir_ == 0:
                         pos = (0, 70)
                         rotate = 0
