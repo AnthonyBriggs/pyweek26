@@ -19,6 +19,31 @@ https://pygame-zero.readthedocs.io/en/stable/hooks.html
 https://pygame-zero.readthedocs.io/en/stable/builtins.html
 
 
+2018-10-26 12:28AM
+------------------
+
+So over the course of today I've been making steady progress. Levels and production counts are in, though not really hooked up, and I've been spending time this evening making the UI work and look nice - excluding the temporary help page I put up earlier :D
+
+Now there's a help kiosk and door that new players enter through, and it displays nice help text that looks like it's on a screen. Shortly(ish) it'll display the machines that you've unlocked so far through your progression, starting with the circuit board, and progressing through to TVs and computers.
+
+A quick todo list, since time's starting to run short and I need to keep track of what's left:
+    X Finish the help, including figuring out a way to display the machines
+    . Nice text when you finish a level (drawing on the training manual work)
+    . Progress numbers above the loading dock, showing what you need to deliver where
+    . Machines should also have icons near the I/O chutes showing what they'll accept / deliver
+    . Time how long it takes to do each level, and overall time.
+        - Not sure about what target times should be, or if I'll have time to implement.
+    . Playtesting
+        - can you actually build the machines and produce stuff.
+        - is multiplayer any fun?
+    . Sound (and music?) when you pick up and put down things, machines start, help is activated,
+            things are produced, delivered, etc.
+    . Some sort of background?
+    . Fix positioning and scaling on all the items
+    . Remove all the debugging points and lines
+    . Packaging and more playtesting!
+
+
 2018-10-25 3:24PM
 -----------------
 

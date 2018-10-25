@@ -55,9 +55,13 @@ class Game(object):
         self.map = {}
         # entry door, training manual, etc. (fixtures)
         self.door = Actor('players/door_closedmid', pos=(0, 105), anchor=(0,70))
+        self.door.flip = False
         self.door_top = Actor('players/door_closedtop', pos=(0, 35), anchor=(0,70))
+        self.door_top.flip = False
         
-        self.training_manual_kiosk = TrainingManualKiosk(self, 7, 0, anchor=(0, 70))
+        self.training_manual_kiosk = TrainingManualKiosk(
+                self, 7, 0, anchor=(0, 70))
+        self.training_manual_kiosk.flip = False
         self.map[(7,0)] = self.training_manual_kiosk
         
         # raw material chutes
@@ -66,7 +70,8 @@ class Game(object):
             y = random.randint(2, self.GRID_HEIGHT - 2)
             while (0, y) in self.map:
                 y = random.randint(2, self.GRID_HEIGHT - 2)
-            self.map[(0, y)] = OreChute(self, 0, y, each_input, ore_time=7, anchor=(0,70))
+            self.map[(0, y)] = OreChute(
+                self, 0, y, each_input, ore_time=5, anchor=(0,70))
         
         # loading docks
         # TODO: loading_time in data??
@@ -75,7 +80,8 @@ class Game(object):
             y = random.randint(2, self.GRID_HEIGHT - 2)
             while (x, y) in self.map:
                 y = random.randint(2, self.GRID_HEIGHT - 2)
-            self.map[(x, y)] = LoadingDock(self, x, y, each_product, loading_time=10, anchor=(0,70))
+            self.map[(x, y)] = LoadingDock(
+                self, x, y, each_product, loading_time=5, anchor=(0,70))
         
         # place machines randomly
         for machine_code in this_level['machines']:
@@ -85,7 +91,9 @@ class Game(object):
                 x = random.randint(2, self.GRID_WIDTH - 2)
                 y = random.randint(2, self.GRID_HEIGHT - 2)
             m_data = data.machines[machine_code]
-            self.map[(x,y)] = MachinePart(self, x, y, m_data['number'], machine_code, parts=m_data['parts'], anchor=(0,70))
+            self.map[(x,y)] = MachinePart(
+                self, x, y, m_data['number'], machine_code, 
+                parts=m_data['parts'], anchor=(0,70))
         
         # conveyors
         x = random.randint(2, self.GRID_WIDTH - 2)
@@ -108,8 +116,13 @@ class Game(object):
         if not remaining:
             # Show win screen + time, load next level
             print ("Win!")
+            if self.level < len(data.levels):
+                self.level += 1
+                self.load_level()
         else:
             # update HUD
+            #print("Remaining products:", remaining)
+            
             pass
         
     def show_help(self, thing_type, name):
@@ -129,7 +142,15 @@ class Game(object):
     def convert_from_grid(self, grid_x, grid_y):
         return ((grid_x) * self.GRID_SIZE,
                 (grid_y+1) * self.GRID_SIZE)
-
+    
+    def blit(self, image, pos):
+        screen.blit(image, pos)
+    
+    def text(self, text, pos, *args, **kwargs):
+        # topright=(840, 20), color="orange", fontname="Boogaloo", fontsize=60
+        # width=180, lineheight=1.5
+        # https://pygame-zero.readthedocs.io/en/stable/ptext.html
+        screen.draw.text(text, pos, *args, **kwargs)
 
 game = Game(HEIGHT, WIDTH)
 print("Game initialised")
@@ -176,7 +197,9 @@ def update(dt):
         machine.update(dt)
     for multimachine in game.multimachines:
         multimachine.update(dt)
-
+    if game.show_training_manual and game.training_manual:
+        game.training_manual.update(dt)
+    
 def on_joy_button_down(joy, button):
     #print("Mu button down:", joy, button)
     # hack to get around GCN adapter

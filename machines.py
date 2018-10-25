@@ -189,7 +189,7 @@ class LoadingDock(Actor):
     def draw(self):
         super().draw()
         self.game.point(self.pos, (255,255,0))
-
+        
     def update(self, dt):
         self.next_load -= dt
         #print("Next load in", self.next_load)
