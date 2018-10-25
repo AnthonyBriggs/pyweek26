@@ -1,6 +1,5 @@
-import sys
-
 from pgzero.actor import Actor
+
 
 class Player(Actor):
     def __init__(self, game, number, *args, **kwargs):
@@ -154,7 +153,16 @@ class Player(Actor):
                 # try to pick up
                 my_grid = self.pick_up_space()
                 machine = self.game.map.get(my_grid, None)
-                if machine:
+                if not machine:
+                    # nope, nothing there
+                    pass
+                if (machine.name == 'ore_chute' or
+                    machine.name == 'loading_dock'):
+                    pass # no pick up
+                elif machine and machine.name == 'training_manual_kiosk':
+                    print("Training Manual!")
+                    self.game.show_training_manual = True
+                else:
                     #print("Picking up", machine)
                     machine.carried = True
                     self.carrying = machine
@@ -164,10 +172,7 @@ class Player(Actor):
                         mm.switch_off()
                         self.game.multimachines.remove(mm)
                         del mm
-                    del self.game.map[my_grid]     # dangerous! 
-                else:
-                    # nope, there's nothing there
-                    pass
+                    del self.game.map[my_grid]   # dangerous! 
         
         if button == joybutton.TWO:
             # debug the conveyors
@@ -224,3 +229,4 @@ class Player(Actor):
         if axis == axis.Y:
             self.speed[1] = value * 7
             self.last_y = value
+            

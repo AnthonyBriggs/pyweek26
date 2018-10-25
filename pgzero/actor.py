@@ -258,8 +258,8 @@ class Actor:
             return
         
         new_surf = self._surf.copy()
-        if self.flip != (False, False):
-            new_surf = pygame.transform.flip(new_surf, *self.flip)
+        if self._flip != (False, False):
+            new_surf = pygame.transform.flip(new_surf, *self._flip)
         if self.scale != 1.0:
             x,y = self._orig_surf.get_size()
             new_x = int(x * self._scale)

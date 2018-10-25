@@ -10,6 +10,7 @@ class Conveyor(Actor):
     def __init__(self, game, grid_x, grid_y, *args, **kwargs):
         self.grid_x = grid_x
         self.grid_y = grid_y
+        self.name = "conveyor_belt"
         self.game = game
         image_name = 'machines/conveyor_middle'.format()
         super().__init__(image_name, *args, **kwargs)
@@ -125,7 +126,7 @@ class OreChute(Actor):
     def __init__(self, game, grid_x, grid_y, ore_type, ore_time, *args, **kwargs):
         self.grid_x = grid_x
         self.grid_y = grid_y
-
+        self.name = "ore_chute"
         self.game = game
         image_name = 'machines/ore_chute'
         super().__init__(image_name, *args, **kwargs)
@@ -171,7 +172,7 @@ class LoadingDock(Actor):
     def __init__(self, game, grid_x, grid_y, item_type, loading_time, *args, **kwargs):
         self.grid_x = grid_x
         self.grid_y = grid_y
-
+        self.name = "loading_dock"
         self.game = game
         image_name = 'machines/loading_dock'
         super().__init__(image_name, *args, **kwargs)
@@ -184,6 +185,7 @@ class LoadingDock(Actor):
     def __str__(self):
         return "<Loading Dock, position: {}, item_type: {}>".format(self.pos, self.item_type)
     __repr__ = __str__
+    
     def draw(self):
         super().draw()
         self.game.point(self.pos, (255,255,0))
@@ -198,14 +200,14 @@ class LoadingDock(Actor):
         """Receive an item from another machine, or return False."""
         #print(item.name, item, self.next_load)
         if item.name == self.item_type and self.next_load <= 0:
-            # TODO: increment score or quota
             self.number_loaded += 1
             self.next_load = self.loading_time
+            self.game.products_required[self.item_type] -= 1
             return True
         else:
             return False
 
-        
+
 class MachinePart(Actor):
     """A visible part of a MultiMachine. Will consist of a box + some parts,
     the parts will animate somehow when the machine is working."""
@@ -227,6 +229,7 @@ class MachinePart(Actor):
         self.game = game
         self.number = number
         self.code = code
+        self.name = 'machine_{}{}'.format(self.number, self.code)
         image_name = 'machines/machine_{}'.format(self.number)
         super().__init__(image_name, *args, **kwargs)
         self.x, self.y = game.convert_from_grid(grid_x, grid_y)
@@ -243,13 +246,13 @@ class MachinePart(Actor):
         self.manuf_time = 0
         self.current_manuf = 0
 
-        # init subparts here??
+        # init subparts
         # eg. Red light top left, computer bottom right, saw_blade left?
         #       {'topleft': <red_light part>, ...}
         self._sub_parts = {}        
         for position, part_name in parts.items():
             pos, scale = self.part_positions[position]
-            print("Adding part", part_name, "at", pos, "scale:", scale)
+            #print("Adding part", part_name, "at", pos, "scale:", scale)
             self._sub_parts[position] = MachineSubPart(self.game, part_name, pos, scale)
     
     def __str__(self):
@@ -541,5 +544,3 @@ class MultiMachine(object):
                 del machine._sub_parts['io']
             
         self.machines = []
-
-        
