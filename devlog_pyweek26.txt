@@ -18,7 +18,15 @@ reference:
 https://pygame-zero.readthedocs.io/en/stable/hooks.html
 https://pygame-zero.readthedocs.io/en/stable/builtins.html
 
-2018-10-35 1:45AM
+
+2018-10-25 3:24PM
+-----------------
+
+Well, another late-ish start today, and when I tested the up/down inputs to machines, they started outputting circuit boards with no input. Took a while to work out WTH was going on, but it turned out to be direction '0' evaluating as False and not counting that machine as an input machine. Since there weren't any empty inputs, all good to go! Not.
+
+Ok, now on to the levels :P
+
+2018-10-25 1:45AM
 -----------------
 
 Welp, I got the data driven stuff more-or-less working, though relatively untested. It's recognising the pattern for a circuit board from data, and the whole map is generated from a config, so that's good enough for me, for now.

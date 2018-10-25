@@ -60,8 +60,8 @@ multimachines = {
     # intermediate
     'circuit_board': {'machines': 'ABC',
                       'layout': 'AB  C ',
-                      'input': [('0L', 'copper_ingot')],
-                      'output': ('4R', 'circuit_board'),
+                      'input': [('0T', 'copper_ingot')],
+                      'output': ('4B', 'circuit_board'),
                       'time': 7, },
     'paper': {'machines': 'BD',
               'layout': 'BD    ',

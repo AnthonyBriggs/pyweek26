@@ -162,6 +162,7 @@ class Player(Actor):
                         # need to disable the multimachine
                         mm = machine.multimachine
                         mm.switch_off()
+                        self.game.multimachines.remove(mm)
                         del mm
                     del self.game.map[my_grid]     # dangerous! 
                 else:
@@ -174,10 +175,22 @@ class Player(Actor):
             machine = self.game.map.get(my_grid, None)
             if machine:
                 print(machine)
-            if hasattr(machine, '_sub_parts'):
-                for part in machine._sub_parts.values():
-                    part.angle += 45
+            #if hasattr(machine, '_sub_parts'):
+            #    for part in machine._sub_parts.values():
+            #        part.angle += 45
         
+        if button == joybutton.THREE:
+            my_grid = self.pick_up_space()
+            machine = self.game.map.get(my_grid, None)
+            if machine:
+                print ("PA>", machine.item, 
+                              getattr(machine, 'item_output', None),
+                              getattr(machine, 'output_direction', None))
+            mm = getattr(machine, 'multimachine', None)
+            if mm:
+                print("PB>", mm.input_machines, mm.output_machines, mm.time)
+            print ("MM>", self.game.multimachines)
+            
     def handle_button_up(self, button):
         if button == joybutton.ZERO and self.carrying and self.putting_down:
             my_grid = self.pick_up_space()

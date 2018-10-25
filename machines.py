@@ -28,6 +28,7 @@ class Conveyor(Actor):
     def __str__(self):
         return "<Conveyor, position: {}, item:{}/{}, direction: {}>".format(
                     self.pos, self.item, self.item_pos, self.direction)
+    __repr__ = __str__
     
     def draw(self):
         if self.direction in (0, 2):
@@ -135,6 +136,7 @@ class OreChute(Actor):
     
     def __str__(self):
         return "<OreChute, position: {}>".format(self.pos)
+    __repr__ = __str__
     
     def draw(self):
         super().draw()
@@ -181,7 +183,7 @@ class LoadingDock(Actor):
     
     def __str__(self):
         return "<Loading Dock, position: {}, item_type: {}>".format(self.pos, self.item_type)
-    
+    __repr__ = __str__
     def draw(self):
         super().draw()
         self.game.point(self.pos, (255,255,0))
@@ -251,8 +253,9 @@ class MachinePart(Actor):
             self._sub_parts[position] = MachineSubPart(self.game, part_name, pos, scale)
     
     def __str__(self):
-        return "<Machine Part {}{}, position: ({}, {}), item: {}, item_types: {} -> {}>".format(
+        return "<Machine Part {}{}, position: ({}, {}), item: {}, item_types: {}/{}>".format(
                     self.number, self.code, self.grid_x, self.grid_y, self.item, self.item_input, self.item_output)
+    __repr__ = __str__
     
     def draw(self):
         super().draw()
@@ -272,7 +275,7 @@ class MachinePart(Actor):
             if conveyor and hasattr(conveyor, 'receive_item_push'):
                 #from_direction = [2, 3, 0, 1][self.direction]   # 0123 -> 2301
                 #print("Attempting to push", self.direction, "from", self, "to", conveyor)
-                success = conveyor.receive_item_push(self.item, self.direction)
+                success = conveyor.receive_item_push(self.item, self.output_direction)
                 if success:
                     self.item = None
                     self.item_pos = 0
@@ -335,6 +338,7 @@ class MachinePart(Actor):
                         print("  added input", machine.input_direction, machine.item_input)
                 
                 # only one output
+                # TODO: Needs updating to multiple outputs?
                 direction, item_type = layout['output']
                 print("  ", layout['output'])
                 index, dir_ = direction  # 1L
@@ -343,14 +347,17 @@ class MachinePart(Actor):
                 if machine is not None:
                     machine.output_direction = dir_lookup.index(dir_)
                     machine.item_output = item_type
-                    print("  added output", machine.input_direction, machine.item_output)
+                    print("  added output", machine.output_direction, machine.item_output)
                 
                 # Add input and output chutes as visual cues
                 for machine in machines:
                     if machine is None:
                         continue
                     #print(machine)
-                    dir_ = machine.input_direction or machine.output_direction
+                    if machine.input_direction is not None:
+                        dir_ = machine.input_direction
+                    else:
+                        dir_ = machine.output_direction
                     if dir_ is None:
                         continue
                     # These rotation values are a chute-specific hack.
@@ -362,7 +369,7 @@ class MachinePart(Actor):
                         pos = (140, 0)
                         rotate = 90
                     if dir_ == 2:
-                        pos = (0, -70)
+                        pos = (70, 0)
                         rotate = 180
                     if dir_ == 3:
                         pos = (-70, 70)
@@ -443,7 +450,8 @@ class MachineSubPart(Actor):
     def __str__(self):
         return "<Machine Sub Part {}, position: {}, scale: {}>".format(
                     self.name, self.pos, self.scale)
-
+    __repr__ = __str__
+    
     def draw(self):
         super().draw()
         self.game.point(self.pos, (255,255,0))
@@ -473,7 +481,8 @@ class MultiMachine(object):
     def __str__(self):
         return "<MultiMachine {}, machines: {}, next production: {}/{}>".format(
                     self.name, len(self.machines), self.time, self.production_time)
-
+    __repr__ = __str__
+    
     def update(self, dt):
         self.next_wiggle -= dt
         if self.next_wiggle < 0:
@@ -491,14 +500,22 @@ class MultiMachine(object):
         
     def update_input_outputs(self):
         """check production - do we have all our inputs?"""
-        self.input_machines = [m for m in self.machines if m.input_direction]
-        self.output_machines = [m for m in self.machines if m.output_direction]
-        empty_inputs = [m for m in self.input_machines if not m.item]
+        self.input_machines = [m for m in self.machines if m.item_input]
+        self.output_machines = [m for m in self.machines if m.item_output]
+        empty_inputs = [m for m in self.input_machines if m.item is None]
         full_outputs = [m for m in self.output_machines if m.item]
         if empty_inputs:
             # don't start production without all the parts
             self.time = self.production_time
-        if not empty_inputs and not full_outputs and self.time < 0:
+            return
+        if full_outputs:
+            # don't start production without room to put the product
+            self.time = self.production_time
+            return
+        if self.time < 0:
+            print("0>", self.machines)
+            print("A>", self.input_machines, self.output_machines)
+            print ("B>", empty_inputs, full_outputs, self.time)
             # can make a thing!
             for m in self.input_machines:
                 m.item = None
