@@ -4,7 +4,7 @@ import random
 import sys
 
 from player import Player
-from machines import Conveyor, OreChute, LoadingDock, MachinePart
+from machines import Conveyor, ConveyorCross, Turntable, OreChute, LoadingDock, MachinePart
 from items import Item
 from training import TrainingManualKiosk, TrainingManual
 import data
@@ -93,8 +93,8 @@ class Game(object):
         for machine_code in this_level['machines']:
             if machine_code == ' ':
                 continue
-            x = random.randint(2, self.GRID_WIDTH - 2)
-            y = random.randint(2, self.GRID_HEIGHT - 2)
+            x = random.randint(1, self.GRID_WIDTH - 2)
+            y = random.randint(1, self.GRID_HEIGHT - 2)
             while (x, y) in self.map:
                 x = random.randint(2, self.GRID_WIDTH - 2)
                 y = random.randint(2, self.GRID_HEIGHT - 2)
@@ -105,15 +105,35 @@ class Game(object):
         
         print("Conveyor belts...")
         # conveyors
-        x = random.randint(2, self.GRID_WIDTH - 2)
-        y = random.randint(2, self.GRID_HEIGHT - 2)
+        x = random.randint(1, self.GRID_WIDTH - 1)
+        y = random.randint(1, self.GRID_HEIGHT - 1)
         for i in range(this_level['conveyors']):
             while (x,y) in self.map:
                 # pick a new coordinate, maybe this one will be blank? :)
-                x = random.randint(2, self.GRID_WIDTH - 2)
-                y = random.randint(2, self.GRID_HEIGHT - 2)
+                x = random.randint(1, self.GRID_WIDTH - 1)
+                y = random.randint(1, self.GRID_HEIGHT - 1)
             self.map[(x,y)] = Conveyor(self, x, y, anchor=(0,30))
         
+        print("Crossover conveyors...")
+        x = random.randint(1, self.GRID_WIDTH - 1)
+        y = random.randint(1, self.GRID_HEIGHT - 1)
+        for i in range(this_level['conveyor_crosses']):
+            while (x,y) in self.map:
+                # pick a new coordinate, maybe this one will be blank? :)
+                x = random.randint(1, self.GRID_WIDTH - 1)
+                y = random.randint(1, self.GRID_HEIGHT - 1)
+            self.map[(x,y)] = ConveyorCross(self, x, y, anchor=(0,70))
+        
+        print("Turntables...")
+        x = random.randint(1, self.GRID_WIDTH - 1)
+        y = random.randint(1, self.GRID_HEIGHT - 1)
+        for i in range(this_level['turntables']):
+            while (x,y) in self.map:
+                # pick a new coordinate, maybe this one will be blank? :)
+                x = random.randint(1, self.GRID_WIDTH - 1)
+                y = random.randint(1, self.GRID_HEIGHT - 1)
+            self.map[(x,y)] = Turntable(self, x, y, anchor=(0,70))
+            
         print("Level loading complete.")
         
         # TODO: show a level intro screen with requirements?
@@ -157,11 +177,6 @@ class Game(object):
             # update HUD
             #print("Remaining products:", remaining)
             pass
-        
-    def show_help(self, thing_type, name):
-        """Switch to help mode, called from the training manual square."""
-        # TODO: pause?
-        pass
     
     def point(self, pos, color=(255,0,0)):
         screen.draw.circle(pos, 5, color)
@@ -211,7 +226,7 @@ def draw():
     # we draw items second, otherwise there's some visible overlap
     # when moving from one conveyor to the next
     for machine in game.map.values():
-        if type(machine) is Conveyor:
+        if type(machine) in (Conveyor, ConveyorCross, Turntable):
             machine.draw_item()
             
     # finally, highlights over the top

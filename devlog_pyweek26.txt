@@ -19,6 +19,21 @@ https://pygame-zero.readthedocs.io/en/stable/hooks.html
 https://pygame-zero.readthedocs.io/en/stable/builtins.html
 
 
+2018-10-26 6:55PM
+-----------------
+
+So I added a bunch of features to help me (and others) playtest my game, the main one being pressing number keys to change level, instead of having to complete everything, and uncovered a bunch of bugs, and missing things that I need to add :|
+
+In no particular order:
+
+ * MultiMachines need to not have common subsequences of machines in their layout. Having machines BD and BDC would mean that you'd have two machines in one, and they'd argue about what was supposed to be input or output. This was a relatively easy fix - I just had to write a short function to detect common subsequences
+ * I need to add a few more conveyors to some maps.
+ * I also need to add a couple more types of conveyors, to split and cross the items coming out of the chutes.
+ * There was something else, but I've forgotten what it was :P Oh well, I'm sure it'll come to me.
+
+ There were a heap of small, off-by-one or mistypoed things, forgetting to filter out spaces from layouts, that kind of thing.
+
+
 2018-10-26 12:28AM
 ------------------
 

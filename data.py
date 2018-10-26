@@ -222,6 +222,8 @@ levels = {
     # circuit?
     'Training day': {
         'conveyors': 18,
+        'conveyor_crosses': 0,
+        'turntables': 0,
         'inputs': ['copper_ingot'],
         'machines': "ABC",
         'products': [(10, 'circuit_board'),],
@@ -231,6 +233,8 @@ levels = {
     # book
     'Probation': {
         'conveyors': 22,
+        'conveyor_crosses': 2,
+        'turntables': 2,
         'inputs': ['brown_organic'],    # no paper needed
         'machines': "ABCDEBDF",
         'products': [(12, 'book'),],
@@ -240,6 +244,8 @@ levels = {
     # axe
     'Chop chop!': {
         'conveyors': 18,
+        'conveyor_crosses': 1,
+        'turntables': 1,
         'inputs': ['metal', 'brown_organic'],
         'machines': "ABDEF",
         'products': [(8, 'axe'),],
@@ -249,6 +255,8 @@ levels = {
     # coffee
     'eat, work, sleep, repeat': {
         'conveyors': 21,
+        'conveyor_crosses': 3,
+        'turntables': 2,
         'inputs': ['organic', 'glass', 'metal'],
         'machines': "ACDEEGF",
         'products': [(10, 'coffee'),],
@@ -258,6 +266,8 @@ levels = {
     # blender
     'Cake day': {
         'conveyors': 22,
+        'conveyor_crosses': 3,
+        'turntables': 2,
         'inputs': ['glass', 'copper_ingot', 'metal'],
         'machines': "ABDEFGJI",
         'products': [(15, 'blender'), (15, 'bowl'),],
@@ -268,6 +278,8 @@ levels = {
     # phone
     "Don't forget to call your mother!": {
         'conveyors': 25,
+        'conveyor_crosses': 3,
+        'turntables': 1,
         'inputs': ['glass', 'copper_ingot', 'metal', 'gold_ingot'],
         'machines': "JHFAB ABCD I",
         'products': [(10, 'phone'),],
@@ -278,6 +290,8 @@ levels = {
     # tv
     'Watch me get a promotion': {
         'conveyors': 27,
+        'conveyor_crosses': 4,
+        'turntables': 2,
         'inputs': ['glass', 'copper_ingot', 'metal'],
         'machines': "KIGE AGJ ABCD",
         'products': [(10, 'tv'),],
@@ -288,6 +302,8 @@ levels = {
     # computer
     'Employee of the month': {
         'conveyors': 30,
+        'conveyor_crosses': 4,
+        'turntables': 3,
         'inputs': ['metal', 'copper_ingot', 'gold_ingot', 'copper_ingot'],
         'machines': "FGHIJK AGJ DFG BC", # missing second D, muahaha
         'products': [(5, 'computer'), (10, 'graphics card'),],
