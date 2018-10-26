@@ -49,9 +49,11 @@ class Game(object):
         self.this_level = this_level
         self.level_name = level_name
         
+        print("Loading products required...")
         for number, product_name in this_level['products']:
             self.products_required[product_name] = number
         
+        print("Initialising map...")
         self.map = {}
         # entry door, training manual, etc. (fixtures)
         self.door = Actor('players/door_closedmid', pos=(0, 105), anchor=(0,70))
@@ -64,15 +66,18 @@ class Game(object):
         self.training_manual_kiosk.flip = False
         self.map[(7,0)] = self.training_manual_kiosk
         
+        print("Ore chutes...")
         # raw material chutes
         # TODO: ore_time in data??
         for each_input in this_level['inputs']:
+            print("  adding", each_input)
             y = random.randint(2, self.GRID_HEIGHT - 2)
             while (0, y) in self.map:
                 y = random.randint(2, self.GRID_HEIGHT - 2)
             self.map[(0, y)] = OreChute(
                 self, 0, y, each_input, ore_time=5, anchor=(0,70))
         
+        print("Loading docks...")
         # loading docks
         # TODO: loading_time in data??
         x = self.GRID_WIDTH - 1
@@ -83,8 +88,11 @@ class Game(object):
             self.map[(x, y)] = LoadingDock(
                 self, x, y, each_product, loading_time=5, anchor=(0,70))
         
+        print("Adding machines...")
         # place machines randomly
         for machine_code in this_level['machines']:
+            if machine_code == ' ':
+                continue
             x = random.randint(2, self.GRID_WIDTH - 2)
             y = random.randint(2, self.GRID_HEIGHT - 2)
             while (x, y) in self.map:
@@ -95,6 +103,7 @@ class Game(object):
                 self, x, y, m_data['number'], machine_code, 
                 parts=m_data['parts'], anchor=(0,70))
         
+        print("Conveyor belts...")
         # conveyors
         x = random.randint(2, self.GRID_WIDTH - 2)
         y = random.randint(2, self.GRID_HEIGHT - 2)
@@ -104,7 +113,11 @@ class Game(object):
                 x = random.randint(2, self.GRID_WIDTH - 2)
                 y = random.randint(2, self.GRID_HEIGHT - 2)
             self.map[(x,y)] = Conveyor(self, x, y, anchor=(0,30))
-    
+        
+        print("Level loading complete.")
+        
+        # TODO: show a level intro screen with requirements?
+
     def draw(self):
         self.door.draw()
         self.door_top.draw()
@@ -115,14 +128,34 @@ class Game(object):
         remaining = [(p, n) for p, n in self.products_required.items() if n > 0]
         if not remaining:
             # Show win screen + time, load next level
-            print ("Win!")
-            if self.level < len(data.levels):
+            self.show_training_manual = True
+            self.training_manual.level_end = True
+            self.training_manual.level_end_text = [
+                ('title', 'Well done, employee!'),
+                ('subtitle', 'further promotions await'),
+                ('paragraph', 175, 'Production this level:'), ]
+            
+            line_count = 1
+            for number, product_name in self.this_level['products']:
+                actual = number - self.products_required[product_name]
+                text = "{}   {}".format(actual, product_name)
+                self.training_manual.level_end_text.append(
+                    ('paragraph',
+                     175 + 30 * line_count, 
+                     '    {}  >>  {}'.format(product_name.replace('_', ' '), number)))
+                line_count += 1
+            
+            if self.level < len(data.level_order) - 1:
+                print("Switching to level", self.level + 1)
                 self.level += 1
+                print("Loading next level...")
                 self.load_level()
+            else:
+                print("Ran out of levels, so I guess you won the game! :D")
+                # TODO: show a 'you win the game screen'
         else:
             # update HUD
             #print("Remaining products:", remaining)
-            
             pass
         
     def show_help(self, thing_type, name):
@@ -259,10 +292,49 @@ def on_joy_axis_motion(joy, axis, value):
 
 
 def on_key_down(key):
-    # TODO: add keys for players 1 and 2 (split keyboard)
+    print(key)
+    
     if key == keys.ESCAPE:
-        print("Thanks for playing!")
-        sys.exit()
+        if game.show_training_manual:
+            # Accidentally pushed this a few times while reading :)
+            game.show_training_manual = False
+        else:
+            print("Thanks for playing!")
+            sys.exit()
+
+    # debug / testing stuff
+    numbers = [keys.K_1, keys.K_2, keys.K_3, keys.K_4, keys.K_5,
+               keys.K_6, keys.K_7, keys.K_8, keys.K_9, keys.K_0]
+    if key in numbers:
+        # change level
+        new_level = numbers.index(key)
+        if new_level < len(data.level_order):
+            game.level = new_level
+            game.load_level()
+    
+    if key == keys.F1:
+        # show the first machine page
+        game.training_manual.page = 2
+        game.show_training_manual = True
+        
+    if key == keys.F5:
+        # finish level immediately
+        for k in game.products_required:
+            game.products_required[k] = 0
+    
+    if key == keys.F4:
+        # Add extra products to required items
+        for k in game.products_required:
+            game.products_required[k] += 1
+
+    if key == keys.F3:
+        # Subtract products from required items
+        for k in game.products_required:
+            game.products_required[k] -= 1
+
+    # TODO: add keys for players 1 and 2 (split keyboard)
+    # P1: WASD + space/alt,
+    # P2: arrows + left shift/enter
 
 def on_mouse_down(pos, button):
     print("Mouse button clicked!")

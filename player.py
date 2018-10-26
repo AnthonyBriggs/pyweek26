@@ -153,10 +153,10 @@ class Player(Actor):
                 # try to pick up
                 my_grid = self.pick_up_space()
                 machine = self.game.map.get(my_grid, None)
-                if not machine:
+                if machine is None:
                     # nope, nothing there
-                    pass
-                if (machine.name == 'ore_chute' or
+                    return
+                elif (machine.name == 'ore_chute' or
                     machine.name == 'loading_dock'):
                     pass # no pick up
                 elif machine and machine.name == 'training_manual_kiosk':
@@ -180,21 +180,11 @@ class Player(Actor):
             machine = self.game.map.get(my_grid, None)
             if machine:
                 print(machine)
-            #if hasattr(machine, '_sub_parts'):
-            #    for part in machine._sub_parts.values():
-            #        part.angle += 45
-        
-        if button == joybutton.THREE:
-            my_grid = self.pick_up_space()
-            machine = self.game.map.get(my_grid, None)
-            if machine:
-                print ("PA>", machine.item, 
-                              getattr(machine, 'item_output', None),
-                              getattr(machine, 'output_direction', None))
             mm = getattr(machine, 'multimachine', None)
             if mm:
-                print("PB>", mm.input_machines, mm.output_machines, mm.time)
-            print ("MM>", self.game.multimachines)
+                print(mm)
+                print("  Production:", mm.input_machines, mm.output_machines)
+            print ("Multimachines in game: ", self.game.multimachines)
             
     def handle_button_up(self, button):
         if button == joybutton.ZERO and self.carrying and self.putting_down:

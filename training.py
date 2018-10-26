@@ -32,6 +32,8 @@ class TrainingManual(object):
         self.page = 1
         self.timer = 0.0
         self.x_move = 0
+        self.level_end = False
+        self.level_end_text = []
         
         # UI images used to build the screens
         self.corner = images.players.display_corner
@@ -42,36 +44,45 @@ class TrainingManual(object):
         
     def draw(self):
         self.draw_background()
-        if self.page == 1:
+        if self.level_end:
+            self.show_level_end_page()
+        elif self.page == 1:
             self.show_help_page()
         else:
             self.show_machine_page()
     
-    def draw_background(self):
+    def draw_background(self, height=8, width=10):
         """Draws the basic screen used when showing the manual."""
         # top corner is 70,70, then 10 across and 8 down
         # corners
-        for pos in [(700,70), (700,560), (70,560), (70,70)]:
+        grid = self.game.GRID_SIZE
+        width_1 = self.game.GRID_SIZE
+        width_p = width * self.game.GRID_SIZE       # default 700
+        height_1 = self.game.GRID_SIZE
+        height_p = height * self.game.GRID_SIZE     # default 560
+        
+        # starts top right
+        for pos in [(width_p,height_1), (width_p,height_p), (width_1,height_p), (width_1, height_1)]:
             self.game.blit(self.corner, pos)
             self.corner = pygame.transform.rotate(self.corner, -90)
         
         # edges
-        xrange = list(range(140, 700, 70))
-        yrange = list(range(140, 560, 70))
+        xrange = list(range(width_1 + grid, width_p, grid))
+        yrange = list(range(height_1 + grid, height_p, grid))
         #print(xrange, yrange)
         
         # top
         for x in xrange:
-            self.game.blit(self.edge, (x, 70))
+            self.game.blit(self.edge, (x, height_1))
         self.edge = pygame.transform.rotate(self.edge, -90)
         for y in yrange:
-            self.game.blit(self.edge, (700, y))
+            self.game.blit(self.edge, (width_p, y))
         self.edge = pygame.transform.rotate(self.edge, -90)
         for x in xrange:
-            self.game.blit(self.edge, (x, 560))
+            self.game.blit(self.edge, (x, height_p))
         self.edge = pygame.transform.rotate(self.edge, -90)
         for y in yrange:
-            self.game.blit(self.edge, (70, y))
+            self.game.blit(self.edge, (width_1, y))
         self.edge = pygame.transform.rotate(self.edge, -90)
         
         # middle
@@ -139,6 +150,15 @@ class TrainingManual(object):
         if self.page < len(halp):
             self.show_right_arrow()
 
+    def show_level_end_page(self):
+        for text_info in self.level_end_text:
+            #print(text_info)
+            f = getattr(self, text_info[0])
+            if len(text_info) == 2:
+                f(text=text_info[1])
+            else:
+                f(y=text_info[1], text=text_info[2])
+        
     def update(self, dt):
         self.timer -= dt
         if self.timer < 0:
@@ -171,6 +191,8 @@ class TrainingManual(object):
     def handle_button_down(self, button):
         if button == joybutton.ONE:  # B button
             self.game.show_training_manual = False
+            self.level_end = False
+            self.level_end_text = []
         pass
     
     def handle_button_up(self, button):

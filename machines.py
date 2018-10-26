@@ -136,7 +136,7 @@ class OreChute(Actor):
         self.next_ore = ore_time
     
     def __str__(self):
-        return "<OreChute, position: {}>".format(self.pos)
+        return "<OreChute, position: {}, item:{}>".format(self.pos, self.ore_type)
     __repr__ = __str__
     
     def draw(self):
@@ -154,7 +154,11 @@ class OreChute(Actor):
         """Ore is sent to the right."""
         conveyor = self.game.map.get((self.grid_x + 1, self.grid_y), None)
         if conveyor:
-            success = conveyor.receive_item_push( Item(self.ore_type, anchor=(12, 26)), from_direction=3 )
+            success = conveyor.receive_item_push(
+                Item(self.ore_type,
+                     anchor=data.items[self.ore_type]['anchor'],
+                     scale=data.items[self.ore_type]['scale']),
+                     from_direction=3 )
             if not success:
                 # hang onto it? Maybe have one in storage, periodically try to push,
                 # create another if empty.
@@ -203,6 +207,8 @@ class LoadingDock(Actor):
             self.number_loaded += 1
             self.next_load = self.loading_time
             self.game.products_required[self.item_type] -= 1
+            print("{} loaded a {} - {} more to go".format(
+                        self, item.name, self.game.products_required[item.name]))
             return True
         else:
             return False
@@ -215,12 +221,12 @@ class MachinePart(Actor):
     # based on bottom left? pos + scale
     part_positions = {
         'topleft': ((10,25), 0.4),
-        'topright': ((27,23), 0.4),
-        'bottomleft': ((10,10), 0.4),
-        'bottomright': ((25,10), 0.4),
+        'topright': ((33,25), 0.4),
+        'bottomleft': ((10,0), 0.4),
+        'bottomright': ((33,0), 0.4),
         'verytop': ((17, 70), 0.5),
         'verytopwide': ((0, 70), 1.0),
-        'hazard': ((0,0), 1.0),
+        'hazard': ((0,35), 1.0),
     }
     
     def __init__(self, game, grid_x, grid_y, number, code, parts={}, *args, **kwargs):
@@ -256,8 +262,10 @@ class MachinePart(Actor):
             self._sub_parts[position] = MachineSubPart(self.game, part_name, pos, scale)
     
     def __str__(self):
-        return "<Machine Part {}{}, position: ({}, {}), item: {}, item_types: {}/{}>".format(
-                    self.number, self.code, self.grid_x, self.grid_y, self.item, self.item_input, self.item_output)
+        return "<Machine Part {}{}, position: ({}, {}), item: {}, item_types: {} -> {}>".format(
+                    self.number, self.code, self.grid_x, self.grid_y, 
+                    self.item, self.item_input or self.item_output,
+                    self.input_direction or self.output_direction)
     __repr__ = __str__
     
     def draw(self):
@@ -314,7 +322,7 @@ class MachinePart(Actor):
         """Check to see if there's a complete MultiMachine."""
         print("Checking machine", str(self.number)+self.code, "for matches.")
         potential = [(k, v) for k, v in data.multimachines.items()
-                        if str(self.code) in v['machines'] and k == 'circuit_board']
+                        if str(self.code) in v['machines']]
         print(len(potential), "matches found")
         print([(k, v['machines']) for k, v in potential])
         
@@ -330,7 +338,7 @@ class MachinePart(Actor):
                 # add inputs and outputs
                 # Input/output is [1-6][LRTB] for blocks 1-6 and left/right/top/bottom
                 dir_lookup = "TRBL"
-                print("  ", layout['input'])
+                #print("  ", layout['input'])
                 for direction, item_type in layout['input']:
                     index, dir_ = direction  # 1L
                     index = int(index)
@@ -338,19 +346,23 @@ class MachinePart(Actor):
                     if machine is not None:
                         machine.input_direction = dir_lookup.index(dir_)
                         machine.item_input = item_type
-                        print("  added input", machine.input_direction, machine.item_input)
+                        print("  added input to {}{}: {} {}".format(
+                            machine.number, machine.code, 
+                            machine.input_direction, machine.item_input))
                 
                 # only one output
                 # TODO: Needs updating to multiple outputs?
                 direction, item_type = layout['output']
-                print("  ", layout['output'])
+                #print("  ", layout['output'])
                 index, dir_ = direction  # 1L
                 index = int(index)
                 machine = machines[index]
                 if machine is not None:
                     machine.output_direction = dir_lookup.index(dir_)
                     machine.item_output = item_type
-                    print("  added output", machine.output_direction, machine.item_output)
+                    print("  added output to {}{}: {} {}".format(
+                        machine.number, machine.code, 
+                        machine.output_direction, machine.item_output))
                 
                 # Add input and output chutes as visual cues
                 for machine in machines:
@@ -432,7 +444,7 @@ class MachinePart(Actor):
 
                 if getattr(machine, 'code', '.') in data.machines.keys():
                     machines[x+y*3] = machine
-                print("ok")
+                #print("ok")
         return machines
         
         
@@ -516,16 +528,23 @@ class MultiMachine(object):
             self.time = self.production_time
             return
         if self.time < 0:
-            print("0>", self.machines)
-            print("A>", self.input_machines, self.output_machines)
-            print ("B>", empty_inputs, full_outputs, self.time)
+            print("MM", self.name, "is producing...")
+            print("  input:", [m.item for m in self.input_machines])
+            #print("  output:", [m.item for m in self.output_machines])
+            #print("0>", self.machines)
+            #print("A>", self.input_machines, self.output_machines)
+            #print ("B>", empty_inputs, full_outputs, self.time)
+            
             # can make a thing!
             for m in self.input_machines:
                 m.item = None
             for m in self.output_machines:
-                # TODO: Items should know what their scale + anchors are
-                m.item = Item(m.item_output, scale=0.5, anchor=(35, 40))
+                m.item = Item(m.item_output,
+                              anchor=data.items[m.item_output]['anchor'],
+                              scale=data.items[m.item_output]['scale'])
                 # the output machine part handles pushing
+            print("  output:", [m.item for m in self.output_machines])
+
             self.time = self.production_time
     
     def switch_off(self):

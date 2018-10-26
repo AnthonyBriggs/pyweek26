@@ -152,7 +152,7 @@ multimachines = {
         'time': 7, },
     'camera': {
         'name': 'camera',
-        'machines': 'ADIKF',
+        'machines': 'DEFIK',
         'layout': 'DIF KE',
         'input': [('0T', 'lens'), ('1T', 'case'), ('2T', 'circuit_board')],
         'output': ('4L', 'camera'),
@@ -230,17 +230,17 @@ levels = {
     
     # book
     'Probation': {
-        'conveyors': 16,
-        'inputs': ('paper', 'brown_organic'),
-        'machines': "ABCDE",
+        'conveyors': 22,
+        'inputs': ['brown_organic'],    # no paper needed
+        'machines': "ABCDEBDF",
         'products': [(12, 'book'),],
         'help': ['circuit_board', 'book'],
     },
 
     # axe
     'Chop chop!': {
-        'conveyors': 15,
-        'inputs': ('metal', 'brown_organic'),
+        'conveyors': 18,
+        'inputs': ['metal', 'brown_organic'],
         'machines': "ABDEF",
         'products': [(8, 'axe'),],
         'help': ['circuit_board', 'book', 'axe'],
@@ -248,8 +248,8 @@ levels = {
     
     # coffee
     'eat, work, sleep, repeat': {
-        'conveyors': 16,
-        'inputs': ('organic', 'glass', 'metal'),
+        'conveyors': 21,
+        'inputs': ['organic', 'glass', 'metal'],
         'machines': "ACDEEGF",
         'products': [(10, 'coffee'),],
         'help': ['circuit_board', 'book', 'axe', 'bowl', 'coffee'],
@@ -257,8 +257,8 @@ levels = {
     
     # blender
     'Cake day': {
-        'conveyors': 20,
-        'inputs': ('glass', 'copper_ingot', 'metal'),
+        'conveyors': 22,
+        'inputs': ['glass', 'copper_ingot', 'metal'],
         'machines': "ABDEFGJI",
         'products': [(15, 'blender'), (15, 'bowl'),],
         'help': ['circuit_board', 'book', 'axe', 'bowl', 'coffee', 
@@ -267,8 +267,8 @@ levels = {
     
     # phone
     "Don't forget to call your mother!": {
-        'conveyors': 20,
-        'inputs': ('glass', 'copper_ingot', 'metal', 'gold_ingot',),
+        'conveyors': 25,
+        'inputs': ['glass', 'copper_ingot', 'metal', 'gold_ingot'],
         'machines': "JHFAB ABCD I",
         'products': [(10, 'phone'),],
         'help': ['circuit_board', 'book', 'axe', 'bowl', 'coffee', 
@@ -277,8 +277,8 @@ levels = {
     
     # tv
     'Watch me get a promotion': {
-        'conveyors': 20,
-        'inputs': ('glass', 'copper_ingot', 'metal'),
+        'conveyors': 27,
+        'inputs': ['glass', 'copper_ingot', 'metal'],
         'machines': "KIGE AGJ ABCD",
         'products': [(10, 'tv'),],
         'help': ['circuit_board', 'book', 'axe', 'bowl', 'coffee', 
@@ -287,8 +287,8 @@ levels = {
     
     # computer
     'Employee of the month': {
-        'conveyors': 20,
-        'inputs': ('metal', 'copper_ingot', 'gold_ingot', 'copper_ingot'),
+        'conveyors': 30,
+        'inputs': ['metal', 'copper_ingot', 'gold_ingot', 'copper_ingot'],
         'machines': "FGHIJK AGJ DFG BC", # missing second D, muahaha
         'products': [(5, 'computer'), (10, 'graphics card'),],
         'help': ['circuit_board', 'book', 'axe', 'bowl', 'coffee', 
