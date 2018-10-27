@@ -227,7 +227,7 @@ levels = {
         'inputs': ['copper_ingot'],
         'machines': "ABC",
         'products': [(10, 'circuit_board'),],
-        'help': ['circuit_board'],
+        'help': ['circuit_board',],
     },
     
     # book

@@ -19,6 +19,32 @@ https://pygame-zero.readthedocs.io/en/stable/hooks.html
 https://pygame-zero.readthedocs.io/en/stable/builtins.html
 
 
+2018-10-27 11:33AM
+------------------
+
+Ok, the help page for machines has been a little tricky, but I got there. Detangling the hard coded stuff I put in to build multimachines was a bit hard, so I ended up building a dummy game to feed into the machines when I'm creating them in the training manual. I still need to add icons for input and output feeds, but it should now just be one bit of work that'll apply to both the real machines and the training ones.
+
+I also spent some time fixing the image for cross over conveyors, since the misalignment was bothering me. I don't think I'll have time to animate the cross over belts or the turntable, but we'll see...
+
+
+2018-10-26 12:30AM
+------------------
+
+So turntables and crossover conveyors are now in the game, since they were required to solve most of the levels :D They went in pretty easily, which is good. I'm not 100% happy with the art for them - I had to crib something together by cutting and pasting Kenney pieces, but they're ok, and I can replace them if I get time while polishing tomorrow.
+
+Overall I think the game's pretty much there, bar the help screen to show the player how to build the machines they need, but that shouldn't be a *huge* effort... touch wood.
+
+Now all I need to do is:
+   - machine help screens
+   - add nice text and icons on machines and loading docks, to make it easier to tell what you're supposed to be doing
+   - time the levels
+   - add sounds and a bit more polish
+   - remove debug points and lines
+   - more testing and packaging.
+   
+Tomorrow is D-day, though in theory I think I have until 11am on Sunday :)
+
+
 2018-10-26 6:55PM
 -----------------
 

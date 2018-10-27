@@ -4,7 +4,8 @@ import random
 import sys
 
 from player import Player
-from machines import Conveyor, ConveyorCross, Turntable, OreChute, LoadingDock, MachinePart
+from conveyors import Conveyor, ConveyorCross, Turntable
+from machines import OreChute, LoadingDock, MachinePart
 from items import Item
 from training import TrainingManualKiosk, TrainingManual
 import data
@@ -105,32 +106,32 @@ class Game(object):
         
         print("Conveyor belts...")
         # conveyors
-        x = random.randint(1, self.GRID_WIDTH - 1)
+        x = random.randint(2, self.GRID_WIDTH - 1)
         y = random.randint(1, self.GRID_HEIGHT - 1)
         for i in range(this_level['conveyors']):
             while (x,y) in self.map:
                 # pick a new coordinate, maybe this one will be blank? :)
-                x = random.randint(1, self.GRID_WIDTH - 1)
+                x = random.randint(2, self.GRID_WIDTH - 1)
                 y = random.randint(1, self.GRID_HEIGHT - 1)
             self.map[(x,y)] = Conveyor(self, x, y, anchor=(0,30))
         
         print("Crossover conveyors...")
-        x = random.randint(1, self.GRID_WIDTH - 1)
+        x = random.randint(2, self.GRID_WIDTH - 1)
         y = random.randint(1, self.GRID_HEIGHT - 1)
         for i in range(this_level['conveyor_crosses']):
             while (x,y) in self.map:
                 # pick a new coordinate, maybe this one will be blank? :)
-                x = random.randint(1, self.GRID_WIDTH - 1)
+                x = random.randint(2, self.GRID_WIDTH - 1)
                 y = random.randint(1, self.GRID_HEIGHT - 1)
             self.map[(x,y)] = ConveyorCross(self, x, y, anchor=(0,70))
         
         print("Turntables...")
-        x = random.randint(1, self.GRID_WIDTH - 1)
+        x = random.randint(2, self.GRID_WIDTH - 1)
         y = random.randint(1, self.GRID_HEIGHT - 1)
         for i in range(this_level['turntables']):
             while (x,y) in self.map:
                 # pick a new coordinate, maybe this one will be blank? :)
-                x = random.randint(1, self.GRID_WIDTH - 1)
+                x = random.randint(2, self.GRID_WIDTH - 1)
                 y = random.randint(1, self.GRID_HEIGHT - 1)
             self.map[(x,y)] = Turntable(self, x, y, anchor=(0,70))
             

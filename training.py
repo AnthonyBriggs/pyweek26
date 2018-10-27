@@ -2,6 +2,8 @@ import pygame
 from pgzero.actor import Actor
 
 import data
+from machines import MachinePart
+
 
 class TrainingManualKiosk(Actor):
     
@@ -42,6 +44,8 @@ class TrainingManual(object):
         self.right = images.players.direction_1
         self.left = images.players.direction_3
         
+        self.dummy_game = None
+    
     def draw(self):
         self.draw_background()
         if self.level_end:
@@ -129,26 +133,54 @@ class TrainingManual(object):
         self.show_right_arrow()
     
     def show_machine_page(self):
-        # which machine are we showing? Only show ones we've unlocked
-        #machine_name = self.game.this_level['help'][self.page - 1]
-        # debug - show more machines than we've unlocked at the start.
-        halp = ['circuit_board', 'book', 'axe', 'bowl', 'coffee']
-        machine_name = halp[self.page - 1]
+        if not self.dummy_game:
+            self.dummy_game = self.build_new_machine()
+        print(self.dummy_game)
         
-        # build temp machine
-        mm = data.multimachines[machine_name]
-        
+        # Draw cached machine
         # display it
+        machine_name = self.game.this_level['help'][self.page - 2]
         self.title(machine_name)
-
+        
+        for machine in self.dummy_game.map.values():
+            machine.draw()
+            for part in machine._sub_parts.values():
+                part.x = machine.x + part.position[0]
+                part.y = machine.y - part.position[1]
+                part.draw()
+            print(machine)
         # arrows
         self.show_left_arrow()
-        #if self.page < len(game.this_level.help):
-        #    self.show_right_arrow()
-        # debug
-        halp = ['circuit_board', 'book', 'axe', 'bowl', 'coffee']
-        if self.page < len(halp):
+        if self.page < len(self.game.this_level['help']) + 1:
             self.show_right_arrow()
+            
+    def build_new_machine(self):
+        # which machine are we showing? Only show ones we've unlocked
+        print(self.game.this_level['help'], self.page, self.page - 2)
+        machine_name = self.game.this_level['help'][self.page - 2]
+        
+        # build temp machine and game
+        mm = data.multimachines[machine_name]
+        dummy_game = DummyGame()
+        
+        # add machines to the map, and call their on_put_down
+        for index, machine_code in enumerate(mm['layout']):
+            if machine_code == ' ':
+                continue
+            x = index % 3 + 4
+            y = index // 3 + 4
+            m_data = data.machines[machine_code]
+            machine = MachinePart(dummy_game, x, y, 
+                m_data['number'], machine_code, 
+                parts=m_data['parts'], anchor=(0,70))
+            dummy_game.map[(x,y)] = machine
+            
+            # call on_put_down to build the other inputs
+            machine.on_put_down()
+            
+            # items?
+        
+        return dummy_game
 
     def show_level_end_page(self):
         for text_info in self.level_end_text:
@@ -167,26 +199,23 @@ class TrainingManual(object):
         # we only move if the timer has counted down,
         # to prevent the manual moving too fast
         if self.x_move and self.timer == 0:
-            if self.x_move < 0:
+            if self.x_move < 0 and self.page > 1:
                 self.page -= 1
                 self.timer = 1
+                self.dummy_game = None
                 print("left")
-            else:
+            elif self.page < len(self.game.this_level['help']) + 1:
                 self.page += 1
                 self.timer = 1
+                self.dummy_game = None
                 print("right")
             print("moving?", self.x_move, self.timer, "page:", self.page)
         
         # constrain to legit pages
         if self.page < 1:
-            self.page = 1
-        #if self.page > len(game.this_level.help):
-        #    self.page = len(game.this_level.help)
-        # debug
-        halp = ['circuit_board', 'book', 'axe', 'bowl', 'coffee']
-        if self.page > len(halp):
-            self.page = len(halp)
-    
+            assert False, "page left too far"
+        elif self.page > len(self.game.this_level['help']) + 1:
+            assert False, "page right too far"
     
     def handle_button_down(self, button):
         if button == joybutton.ONE:  # B button
@@ -209,5 +238,22 @@ class TrainingManual(object):
                 self.x_move = value
             print(axis, value, self.x_move)
 
-    
     # TODO: will need to handle keys
+
+class DummyGame(object):
+    
+    def __init__(self):
+        self.map = {}
+        self.multimachines = []
+        self.GRID_SIZE = 70
+    
+    def convert_to_grid(self, x, y):
+        return (int(x / self.GRID_SIZE),
+                int(y / self.GRID_SIZE) - 1)
+
+    def convert_from_grid(self, grid_x, grid_y):
+        return ((grid_x) * self.GRID_SIZE,
+                (grid_y+1) * self.GRID_SIZE)
+    
+    def point(self, *args, **kwargs):
+        pass
