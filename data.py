@@ -33,14 +33,14 @@ items = {
     'lens': {'anchor': item_70, 'scale': 40/70, },
     'bowl': {'anchor': (43*40/86, 86*40/86), 'scale': 40/86, },
     'motor': {'anchor': item_70, 'scale': 40/70, },
-    'case': {'anchor': (36*65/40, 65*65/40), 'scale': 65/40, },
+    'case': {'anchor': (36*40/65, 65*40/65), 'scale': 40/65, },
     
     # final
     'book': {'anchor': (55*40/124, 124*40/124), 'scale': 40/124, },
-    'coffee': {'anchor': (57, 111), 'scale': 40/111, },
+    'coffee': {'anchor': (57*40/111, 111*40/111), 'scale': 40/111, },
     'axe': {'anchor': (42*40/128, 128*40/128), 'scale': 40/128, },
     'camera': {'anchor': (56*40/112, 80*40/112), 'scale': 40/112, },
-    'computer': {'anchor': (), 'scale': 1.0, },
+    'computer': {'anchor': (46*40/128, 128*40/128), 'scale': 40/128, },
     'tv': {'anchor': (45*40/128, 128*40/128), 'scale': 40/128, },
     'phone': {'anchor': (65*40/141, 68*40/141), 'scale': 40/141, },
     'blender': {'anchor': (58*40/108, 108*40/108), 'scale': 40/108, },
@@ -60,6 +60,9 @@ machines = {
     'I': {'number': 2, 'parts': {'topleft': 'screen' , 'bottomright': 'green_sign', }, },
     'J': {'number': 1, 'parts': {'topleft': 'blue_window', 'bottomright': 'red_sign',}, },
     'K': {'number': 5, 'parts': {'verytop': 'saw_blade', 'bottomleft': 'red_sign',}, },
+    'L': {'number': 1, 'parts': {'bottomright': 'blue_window',}, },
+    'M': {'number': 2, 'parts': {'verytop': 'green_light',}, },
+    'N': {'number': 3, 'parts': {'topright': 'screen', 'topleft': 'screen',}, },
 }
 
 multimachines = {
@@ -87,8 +90,8 @@ multimachines = {
         'time': 10, },
     'graphics_card': {
         'name': 'graphics_card',
-        'machines': 'BCD',
-        'layout': 'CB D  ',
+        'machines': 'ICD',
+        'layout': 'CI D  ',
         'input': [('0L', 'circuit_board'), ('1T', 'copper_ingot')],
         'output': ('3R', 'motherboard'),
         'time': 9, },
@@ -124,8 +127,8 @@ multimachines = {
     # final
     'book': {
         'name': 'book',
-        'machines': 'ABDE',
-        'layout': 'BAD E ',
+        'machines': 'AJDE',
+        'layout': 'JAD E ',
         'input': [('0T', 'paper'), ('1T', 'paper'), ('2T', 'brown_organic')],
         'output': ('4R', 'book'),
         'time': 8, },
@@ -138,8 +141,8 @@ multimachines = {
         'time': 7, },
     'axe': {
         'name': 'axe',
-        'machines': 'BDF',
-        'layout': 'DBF   ',
+        'machines': 'JDF',
+        'layout': 'DJF   ',
         'input': [('0L', 'metal'), ('1T', 'brown_organic')],
         'output': ('2B', 'axe'),
         'time': 8, },
@@ -152,31 +155,31 @@ multimachines = {
         'time': 7, },
     'camera': {
         'name': 'camera',
-        'machines': 'DEFIK',
-        'layout': 'DIF KE',
+        'machines': 'GLMNK',
+        'layout': 'LMG KN',
         'input': [('0T', 'lens'), ('1T', 'case'), ('2T', 'circuit_board')],
         'output': ('4L', 'camera'),
         'time': 12, },
     'phone': {
         'name': 'phone',
         'machines': 'JHFAB',
-        'layout': 'JHFA B',
+        'layout': 'AHFJ B',
         'input': [('3L', 'glass'), ('0T', 'circuit_board'), ('2T', 'gold_ingot')],
         'output': ('5R', 'phone'),
         'time': 10, },
     'tv': {
         'name': 'tv',
-        'machines': 'KIGE',
-        'layout': '  KIGE',
+        'machines': 'JIGE',
+        'layout': '  JIGE',
         'input': [('2T', 'glass'), ('3L', 'case'), ('4B', 'circuit_board')],
-        'output': ('5T', 'tv'),
+        'output': ('5B', 'tv'),
         'time': 12, },
     'computer': {
         'name': 'computer',
-        'machines': 'FGHIJK',
-        'layout': 'FHGKJI',
+        'machines': 'EGHHIK',
+        'layout': 'GEHIHK',
         'input': [('0L', 'case'), ('1T', 'motherboard'), ('2R', 'graphics_card')],
-        'output': ('3B', 'computer'),
+        'output': ('5R', 'computer'),
         'time': 15, },
 }
 
@@ -203,8 +206,22 @@ def sanity_check_machines():
                     mm['name'], combo_lookup[combo]['name'], combo, (x,y)))
             else:
                 combo_lookup[combo] = mm
-
-#sanity_check_machines()
+    
+        # visual issue: don't want machines with top item and top input
+        for index, machine_code in enumerate(mm['layout']):
+            if machine_code == ' ':
+                continue
+            machine = machines[machine_code]
+            if ('verytop' in machine['parts'] or 
+                'verytop' in machine['parts']):
+                hoppers = [h for h, item in mm['input']]
+                if '1T' in hoppers or '1T' in mm['output']:
+                    print('potential conflict in {}, layout[{}] -> {}'.format(
+                        mm['name'], index, machine_code))
+        
+        # check that levels have enough machines?
+        
+sanity_check_machines()
     
 # machines, number of conveyors, time limit, products needed
 # for now, assume we're placing elements at random.
@@ -236,7 +253,7 @@ levels = {
         'conveyor_crosses': 2,
         'turntables': 2,
         'inputs': ['brown_organic'],    # no paper needed
-        'machines': "ABCDEBDF",
+        'machines': "BD AJDE BF",
         'products': [(12, 'book'),],
         'help': ['circuit_board', 'book'],
     },
@@ -247,7 +264,7 @@ levels = {
         'conveyor_crosses': 1,
         'turntables': 1,
         'inputs': ['metal', 'brown_organic'],
-        'machines': "ABDEF",
+        'machines': "JDF AB",
         'products': [(8, 'axe'),],
         'help': ['circuit_board', 'book', 'axe'],
     },
@@ -258,7 +275,7 @@ levels = {
         'conveyor_crosses': 3,
         'turntables': 2,
         'inputs': ['organic', 'glass', 'metal'],
-        'machines': "ACDEEGF",
+        'machines': "DE ACEG BF",
         'products': [(10, 'coffee'),],
         'help': ['circuit_board', 'book', 'axe', 'bowl', 'coffee'],
     },
@@ -269,7 +286,7 @@ levels = {
         'conveyor_crosses': 3,
         'turntables': 2,
         'inputs': ['glass', 'copper_ingot', 'metal'],
-        'machines': "ABDEFGJI",
+        'machines': "DE EFI FGJI AB",
         'products': [(15, 'blender'), (15, 'bowl'),],
         'help': ['circuit_board', 'book', 'axe', 'bowl', 'coffee', 
                  'motor', 'blender'],
@@ -281,7 +298,7 @@ levels = {
         'conveyor_crosses': 3,
         'turntables': 1,
         'inputs': ['glass', 'copper_ingot', 'metal', 'gold_ingot'],
-        'machines': "JHFAB ABCD I",
+        'machines': "ABC JHFAB CDI",
         'products': [(10, 'phone'),],
         'help': ['circuit_board', 'book', 'axe', 'bowl', 'coffee', 
                 'motor', 'blender', 'case', 'tv', 'phone'],
@@ -293,7 +310,7 @@ levels = {
         'conveyor_crosses': 4,
         'turntables': 2,
         'inputs': ['glass', 'copper_ingot', 'metal'],
-        'machines': "KIGE AGJ ABCD",
+        'machines': "ABC AGJ JIGE ABCD",
         'products': [(10, 'tv'),],
         'help': ['circuit_board', 'book', 'axe', 'bowl', 'coffee', 
                 'motor', 'blender', 'case', 'tv'],
@@ -305,7 +322,7 @@ levels = {
         'conveyor_crosses': 4,
         'turntables': 3,
         'inputs': ['metal', 'copper_ingot', 'gold_ingot', 'copper_ingot'],
-        'machines': "FGHIJK AGJ DFG BC", # missing second D, muahaha
+        'machines': "AGJ DFGI EHHIK BC", # missing second J, muahaha
         'products': [(5, 'computer'), (10, 'graphics card'),],
         'help': ['circuit_board', 'book', 'axe', 'bowl', 'coffee', 
                  'motor', 'blender', 'case', 'tv', 'motherboard', 'computer'],

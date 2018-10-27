@@ -24,7 +24,16 @@ class OreChute(Actor):
         self.ore_type = ore_type
         self.ore_time = ore_time
         self.next_ore = ore_time
-    
+        
+        # icon
+        thing = self.ore_type
+        new_scale = data.items[thing]['scale'] * 0.5
+        new_anchor = data.items[thing]['anchor']
+        new_anchor = (new_anchor[0] * 0.5, new_anchor[1] * 0.5)
+        self.icon = Item(thing, 
+            anchor=new_anchor, scale=new_scale, from_direction=1 )
+        self.icon.pos = (self.x + 85, self.y - 50)
+        
     def __str__(self):
         return "<OreChute, position: {}, item:{}>".format(self.pos, self.ore_type)
     __repr__ = __str__
@@ -32,7 +41,8 @@ class OreChute(Actor):
     def draw(self):
         super().draw()
         self.game.point(self.pos, (0,255,0))
-
+        self.icon.draw()
+        
     def update(self, dt):
         self.next_ore -= dt
         #print("Next ore in", self.next_ore)
@@ -59,7 +69,6 @@ class OreChute(Actor):
             # push it onto the floor? For now, do nothing
             pass
 
-
 class LoadingDock(Actor):
     """Accepts packaged goods for delivery to customers."""
     
@@ -76,6 +85,15 @@ class LoadingDock(Actor):
         self.next_load = loading_time
         self.number_loaded = 0
     
+        # icon
+        thing = self.item_type
+        new_scale = data.items[thing]['scale'] * 0.5
+        new_anchor = data.items[thing]['anchor']
+        new_anchor = (new_anchor[0] * 0.5, new_anchor[1] * 0.5)
+        self.icon = Item(thing, 
+            anchor=new_anchor, scale=new_scale, from_direction=1 )
+        self.icon.pos = (self.x + 25, self.y - 45)
+        
     def __str__(self):
         return "<Loading Dock, position: {}, item_type: {}>".format(self.pos, self.item_type)
     __repr__ = __str__
@@ -83,6 +101,8 @@ class LoadingDock(Actor):
     def draw(self):
         super().draw()
         self.game.point(self.pos, (255,255,0))
+        self.icon.draw()
+        self.game.text(str(self.number_loaded), (self.x + 5, self.y - 60))
         
     def update(self, dt):
         self.next_load -= dt
@@ -137,6 +157,7 @@ class MachinePart(Actor):
         self.item_output = None
         self.output_direction = None
         self.multimachine = None
+        self.icon = None
         
         # Used for timing and animation progress
         self.manuf_time = 0
@@ -283,6 +304,17 @@ class MachinePart(Actor):
                     machine._sub_parts['io'] = MachineSubPart(self.game, 'io', pos, 1.0, anchor=(0,70))
                     machine._sub_parts['io'].angle = rotate
                     #print(machine._sub_parts)
+                
+                    # also add icon of input / output items
+                    icon_offsets = [(35, 80), (90, 25), (35, -30), (-20, 25)]
+                    thing = machine.item_input or machine.item_output
+                    new_scale = data.items[thing]['scale'] * 0.5
+                    new_anchor = data.items[thing]['anchor']
+                    new_anchor = (new_anchor[0] * 0.5, new_anchor[1] * 0.5)
+                    machine._sub_parts['icon'] = Item(thing,
+                         anchor=new_anchor,scale=new_scale, from_direction=1 )
+                    machine._sub_parts['icon'].position = icon_offsets[dir_]
+                    
                 return
     
     def check_layout(self, machine_type, layout):

@@ -135,20 +135,31 @@ class TrainingManual(object):
     def show_machine_page(self):
         if not self.dummy_game:
             self.dummy_game = self.build_new_machine()
-        print(self.dummy_game)
+        #print(self.dummy_game)
         
         # Draw cached machine
         # display it
         machine_name = self.game.this_level['help'][self.page - 2]
-        self.title(machine_name)
         
+        inputs = []
+        outputs = []
         for machine in self.dummy_game.map.values():
             machine.draw()
             for part in machine._sub_parts.values():
                 part.x = machine.x + part.position[0]
                 part.y = machine.y - part.position[1]
                 part.draw()
-            print(machine)
+            #print(machine)
+            
+            if machine.item_input:
+                inputs.append(machine.item_input.replace("_", " "))
+            if machine.item_output:
+                outputs.append(machine.item_output.replace("_", " "))
+            
+        self.title(machine_name)
+        self.paragraph(150, "Requires: {}".format(", ".join(inputs)))
+        self.paragraph(200, "Produces: {}".format(", ".join(outputs)))
+        
         # arrows
         self.show_left_arrow()
         if self.page < len(self.game.this_level['help']) + 1:
@@ -156,7 +167,7 @@ class TrainingManual(object):
             
     def build_new_machine(self):
         # which machine are we showing? Only show ones we've unlocked
-        print(self.game.this_level['help'], self.page, self.page - 2)
+        #print(self.game.this_level['help'], self.page, self.page - 2)
         machine_name = self.game.this_level['help'][self.page - 2]
         
         # build temp machine and game
@@ -167,8 +178,8 @@ class TrainingManual(object):
         for index, machine_code in enumerate(mm['layout']):
             if machine_code == ' ':
                 continue
-            x = index % 3 + 4
-            y = index // 3 + 4
+            x = index % 3 + 5
+            y = index // 3 + 5
             m_data = data.machines[machine_code]
             machine = MachinePart(dummy_game, x, y, 
                 m_data['number'], machine_code, 
@@ -209,7 +220,7 @@ class TrainingManual(object):
                 self.timer = 1
                 self.dummy_game = None
                 print("right")
-            print("moving?", self.x_move, self.timer, "page:", self.page)
+            #print("moving?", self.x_move, self.timer, "page:", self.page)
         
         # constrain to legit pages
         if self.page < 1:
@@ -236,7 +247,7 @@ class TrainingManual(object):
                 self.x_move = 0
             else:
                 self.x_move = value
-            print(axis, value, self.x_move)
+            #print(axis, value, self.x_move)
 
     # TODO: will need to handle keys
 

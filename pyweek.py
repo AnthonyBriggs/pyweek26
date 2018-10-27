@@ -2,6 +2,7 @@
 
 import random
 import sys
+import time
 
 from player import Player
 from conveyors import Conveyor, ConveyorCross, Turntable
@@ -35,12 +36,18 @@ class Game(object):
         # start with player 1, etc. - or disable the GCN adapter?
         self.players = {}
         self.multimachines = []
-        self.products_required = {}        
-        self.level = 0
-        self.load_level()
+        self.products_required = {}
+        
         self.show_training_manual = False
         # The actual manual, displayed over the top
         self.training_manual = TrainingManual(self)
+        
+        self.start_time = time.time()
+        self.level_start_time = None
+        self.level_finish_time = None
+        
+        self.level = 0
+        self.load_level()
         
     def load_level(self, level=None):
         if level is None:
@@ -136,18 +143,22 @@ class Game(object):
             self.map[(x,y)] = Turntable(self, x, y, anchor=(0,70))
             
         print("Level loading complete.")
+        self.level_start_time = time.time()
+        print("Started timer:", self.level_start_time)
         
-        # TODO: show a level intro screen with requirements?
-
     def draw(self):
         self.door.draw()
         self.door_top.draw()
         self.training_manual_kiosk.draw()
         
     def update(self, dt):
+        #print(time.time(), self.level_start_time, self.level_finish_time)
+        
         # Check to see if we've produced everything
         remaining = [(p, n) for p, n in self.products_required.items() if n > 0]
         if not remaining:
+            self.level_finish_time = time.time()
+            
             # Show win screen + time, load next level
             self.show_training_manual = True
             self.training_manual.level_end = True
@@ -165,6 +176,13 @@ class Game(object):
                      175 + 30 * line_count, 
                      '    {}  >>  {}'.format(product_name.replace('_', ' '), number)))
                 line_count += 1
+            
+            self.training_manual.level_end_text.append(
+                    ('paragraph', 500, "Level time: {0:.2f} seconds".format(
+                        self.level_finish_time - self.level_start_time)))
+            self.training_manual.level_end_text.append(
+                    ('paragraph', 550, "Total time: {0:.2f} seconds".format(
+                        self.level_finish_time - self.start_time)))
             
             if self.level < len(data.level_order) - 1:
                 print("Switching to level", self.level + 1)
@@ -237,7 +255,14 @@ def draw():
     # training manual
     if game.show_training_manual and game.training_manual:
         game.training_manual.draw()
-        
+    
+    elapsed_time = time.time() - game.level_start_time
+    if elapsed_time >= 60:
+        elapsed_text = str(int(elapsed_time // 60)) + ":{0:.1f}".format(elapsed_time % 60)
+    else:
+        elapsed_text = "{0:.1f}".format(elapsed_time % 60)
+    screen.draw.text(elapsed_text, (70*8 + 20, 10))
+    
 def update(dt):
     game.update(dt)
     for player in game.players.values():
