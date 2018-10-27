@@ -1,3 +1,4 @@
+from pgzero.actor import Actor
 
 class Item(Actor):
     """A resource or built product of some sort,

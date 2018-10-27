@@ -40,7 +40,7 @@ class OreChute(Actor):
     
     def draw(self):
         super().draw()
-        self.game.point(self.pos, (0,255,0))
+        #self.game.point(self.pos, (0,255,0))
         self.icon.draw()
         
     def update(self, dt):
@@ -100,9 +100,10 @@ class LoadingDock(Actor):
     
     def draw(self):
         super().draw()
-        self.game.point(self.pos, (255,255,0))
+        #self.game.point(self.pos, (255,255,0))
         self.icon.draw()
-        self.game.text(str(self.number_loaded), (self.x + 5, self.y - 60))
+        self.game.text(str(self.number_loaded), (self.x + 5, self.y - 60),
+            fontname="kenney space", fontsize=13)
         
     def update(self, dt):
         self.next_load -= dt
@@ -181,7 +182,7 @@ class MachinePart(Actor):
     
     def draw(self):
         super().draw()
-        self.game.point(self.pos, (255,0,255))
+        #self.game.point(self.pos, (255,0,255))
                 
     def update(self, dt):
         for part in self._sub_parts.values():
@@ -192,11 +193,11 @@ class MachinePart(Actor):
         if self.item and self.item_output:
             # try and push out
             target_grid = self.get_target_grid()
-            print(self, "pushing to", target_grid)
+            #print(self, "pushing to", target_grid)
             conveyor = self.game.map.get(target_grid, None)
             if conveyor and hasattr(conveyor, 'receive_item_push'):
                 from_direction = [2, 3, 0, 1][self.output_direction]   # 0123 -> 2301
-                print("Attempting to push", self.direction, "from", self, "to", conveyor)
+                #print("Attempting to push", self.direction, "from", self, "to", conveyor)
                 success = conveyor.receive_item_push(self.item, from_direction)
                 if success:
                     self.item = None
@@ -327,7 +328,7 @@ class MachinePart(Actor):
         machines = [None, None, None, None, None, None]
         
         #debug - very useful, shows pattern from submachine's PoV
-        if 1:
+        if 0:
             for y in (0, 1):
                 output = ""
                 for x in (0, 1, 2):
@@ -391,7 +392,7 @@ class MachineSubPart(Actor):
     
     def draw(self):
         super().draw()
-        self.game.point(self.pos, (255,255,0))
+        #self.game.point(self.pos, (255,255,0))
 
     def update(self, dt):
         pass

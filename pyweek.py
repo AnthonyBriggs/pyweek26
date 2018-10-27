@@ -227,9 +227,9 @@ def draw():
     
     # draw a grid so we can tell what's going on with positioning
     for i in range(0, game.WIDTH, game.GRID_SIZE):
-        screen.draw.line((i,0), (i, game.HEIGHT), (66,33,33))
+        screen.draw.line((i,0), (i, game.HEIGHT), (10,10,10))
     for j in range(0, game.HEIGHT, game.GRID_SIZE):
-        screen.draw.line((0,j), (game.WIDTH, j), (33,66,33))
+        screen.draw.line((0,j), (game.WIDTH, j), (10,10,10))
     game.draw()
     
     # TODO: draw according to grid depth/height in the factory
@@ -240,7 +240,7 @@ def draw():
     for machine in game.map.values():
         for part in getattr(machine, '_sub_parts', {}).values():
             part.draw()
-
+        
     # we draw items second, otherwise there's some visible overlap
     # when moving from one conveyor to the next
     for machine in game.map.values():
@@ -260,7 +260,8 @@ def draw():
         elapsed_text = str(int(elapsed_time // 60)) + ":{0:.1f}".format(elapsed_time % 60)
     else:
         elapsed_text = "{0:.1f}".format(elapsed_time % 60)
-    screen.draw.text(elapsed_text, (70*8 + 20, 10))
+    screen.draw.text(elapsed_text, (70*8 + 20, 10), 
+        fontname="kenney space", fontsize=13)
     
 def update(dt):
     game.update(dt)
@@ -292,7 +293,7 @@ def on_joy_button_down(joy, button):
         else:
             # remove 'em, but handle the press first, to give us
             # a chance to do things before they're removed
-            game.players[player_no].handle_button(button)
+            game.players[player_no].handle_button_down(button)
             del game.players[player_no]
     
     if player_no in game.players:
@@ -320,7 +321,6 @@ def sanitise_axis(value):
 
 def on_joy_axis_motion(joy, axis, value):
     #print("Mu joystick move:", joy, axis, value)
-
     if game.show_training_manual:
         # send buttons and axis to the training manual instead
         game.training_manual.handle_axis(axis, sanitise_axis(value))
@@ -333,8 +333,7 @@ def on_joy_axis_motion(joy, axis, value):
 
 
 def on_key_down(key):
-    print(key)
-    
+    #print(key)
     # keys for players 1 and 2 (split keyboard)
     # P1: WASD + space/alt,
     if key in (keys.W, keys.A, keys.S, keys.D, 
@@ -388,13 +387,16 @@ def on_key_down(key):
         # Add extra products to required items
         for k in game.products_required:
             game.products_required[k] += 1
+        print(game.products_required)
 
     if key == keys.F3:
         # Subtract products from required items
         for k in game.products_required:
             game.products_required[k] -= 1
+        print(game.products_required)
 
 def on_key_up(key):
+    #print(key)
     # keys for players 1 and 2 (split keyboard)
     # P1: WASD + space/alt,
     if key in (keys.W, keys.A, keys.S, keys.D, 
@@ -414,7 +416,8 @@ def on_key_up(key):
 
 
 def on_mouse_down(pos, button):
-    print("Mouse button clicked!")
+    #print("Mouse button clicked!")
+    pass
 
 def on_mouse_move(pos, rel, buttons):
     # rel = position compared to previous

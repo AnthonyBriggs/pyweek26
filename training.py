@@ -127,7 +127,7 @@ class TrainingManual(object):
             "Longer depress times will activate the conveyor's holographic "
             "directional guide.")
         self.paragraph(480, "Modular machine production units have "
-            "been delivered, but may required some assembly. Relevant "
+            "been delivered, but may require some assembly. Relevant "
             " MMPU user guides are available on further pages.")
         self.paragraph(585, "(B) or (space) to return to your duties.")
         self.show_right_arrow()

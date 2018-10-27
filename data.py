@@ -80,7 +80,7 @@ multimachines = {
         'layout': 'BD    ',
         'input': [('0L', 'brown_organic')],
         'output': ('1B', 'paper'),
-        'time': 4, },
+        'time': 3, },
     'motherboard': {
         'name': 'motherboard',
         'machines': 'DFGI',
@@ -176,8 +176,8 @@ multimachines = {
         'time': 12, },
     'computer': {
         'name': 'computer',
-        'machines': 'EGHHIK',
-        'layout': 'GEHIHK',
+        'machines': 'EJHHIK',
+        'layout': 'JEHIHK',
         'input': [('0L', 'case'), ('1T', 'motherboard'), ('2R', 'graphics_card')],
         'output': ('5R', 'computer'),
         'time': 15, },
@@ -254,8 +254,8 @@ levels = {
         'turntables': 2,
         'inputs': ['brown_organic'],    # no paper needed
         'machines': "BD AJDE BF",
-        'products': [(12, 'book'),],
-        'help': ['circuit_board', 'book'],
+        'products': [(10, 'book'),],
+        'help': ['circuit_board', 'paper', 'book'],
     },
 
     # axe
@@ -266,7 +266,7 @@ levels = {
         'inputs': ['metal', 'brown_organic'],
         'machines': "JDF AB",
         'products': [(8, 'axe'),],
-        'help': ['circuit_board', 'book', 'axe'],
+        'help': ['circuit_board', 'paper', 'book', 'axe'],
     },
     
     # coffee
@@ -277,7 +277,7 @@ levels = {
         'inputs': ['organic', 'glass', 'metal'],
         'machines': "DE ACEG BF",
         'products': [(10, 'coffee'),],
-        'help': ['circuit_board', 'book', 'axe', 'bowl', 'coffee'],
+        'help': ['circuit_board', 'paper', 'book', 'axe', 'bowl', 'coffee'],
     },
     
     # blender
@@ -288,7 +288,7 @@ levels = {
         'inputs': ['glass', 'copper_ingot', 'metal'],
         'machines': "DE EFI FGJI AB",
         'products': [(15, 'blender'), (15, 'bowl'),],
-        'help': ['circuit_board', 'book', 'axe', 'bowl', 'coffee', 
+        'help': ['circuit_board', 'paper', 'book', 'axe', 'bowl', 'coffee', 
                  'motor', 'blender'],
     },
     
@@ -300,7 +300,7 @@ levels = {
         'inputs': ['glass', 'copper_ingot', 'metal', 'gold_ingot'],
         'machines': "ABC JHFAB CDI",
         'products': [(10, 'phone'),],
-        'help': ['circuit_board', 'book', 'axe', 'bowl', 'coffee', 
+        'help': ['circuit_board', 'paper', 'book', 'axe', 'bowl', 'coffee', 
                 'motor', 'blender', 'case', 'tv', 'phone'],
     },
     
@@ -312,7 +312,7 @@ levels = {
         'inputs': ['glass', 'copper_ingot', 'metal'],
         'machines': "ABC AGJ JIGE ABCD",
         'products': [(10, 'tv'),],
-        'help': ['circuit_board', 'book', 'axe', 'bowl', 'coffee', 
+        'help': ['circuit_board', 'paper', 'book', 'axe', 'bowl', 'coffee', 
                 'motor', 'blender', 'case', 'tv'],
     },
     
@@ -324,7 +324,7 @@ levels = {
         'inputs': ['metal', 'copper_ingot', 'gold_ingot', 'copper_ingot'],
         'machines': "AGJ DFGI EHHIK BC", # missing second J, muahaha
         'products': [(5, 'computer'), (10, 'graphics card'),],
-        'help': ['circuit_board', 'book', 'axe', 'bowl', 'coffee', 
+        'help': ['circuit_board', 'paper', 'book', 'axe', 'bowl', 'coffee', 
                  'motor', 'blender', 'case', 'tv', 'motherboard', 'computer'],
     },
 }

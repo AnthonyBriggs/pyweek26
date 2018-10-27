@@ -38,7 +38,7 @@ class Conveyor(Actor):
             self.anchor = (0, 30)
             self.image = "machines/conveyor_middle"
         super().draw()
-        self.game.point(self.pos, (0,0,255))
+        #self.game.point(self.pos, (0,0,255))
     
     def draw_item(self):
         if not self.item:
@@ -60,7 +60,7 @@ class Conveyor(Actor):
                              self.y - 28)
 
         self.item.draw()
-        self.game.point(self.item.pos, (0,255,255))
+        #self.game.point(self.item.pos, (0,255,255))
     
     def update(self, dt):
         if not self.carried:
@@ -144,7 +144,7 @@ class ConveyorCross(Actor):
     
     def draw(self):
         super().draw()
-        self.game.point(self.pos, (0,0,255))
+        #self.game.point(self.pos, (0,0,255))
     
     def draw_item(self):
         for index, item, pos in [
@@ -169,7 +169,7 @@ class ConveyorCross(Actor):
                 item.pos = (self.x + self.game.GRID_SIZE - pos, 
                             self.y - 28)
             item.draw()
-            self.game.point(item.pos, (0,255,255))
+            #self.game.point(item.pos, (0,255,255))
 
     def update(self, dt):
         if not self.carried:
@@ -289,7 +289,7 @@ class Turntable(Actor):
     
     def draw(self):
         super().draw()
-        self.game.point(self.pos, (0,0,255))
+        #self.game.point(self.pos, (0,0,255))
 
     def draw_item(self):
         # just draw it in the middle for now...

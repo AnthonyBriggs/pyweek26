@@ -42,7 +42,7 @@ class Player(Actor):
                 part.draw()
         
         #self.game.point(self.pos)
-        self.game.point((self.x, self.y))
+        #self.game.point((self.x, self.y))
     
     def draw_highlight(self):
         my_grid = self.pick_up_space()
