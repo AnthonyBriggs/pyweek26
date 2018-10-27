@@ -215,12 +215,12 @@ class TrainingManual(object):
                 self.timer = 1
                 self.dummy_game = None
                 print("left")
-            elif self.page < len(self.game.this_level['help']) + 1:
+            elif self.x_move > 0 and self.page < len(self.game.this_level['help']) + 1:
                 self.page += 1
                 self.timer = 1
                 self.dummy_game = None
                 print("right")
-            #print("moving?", self.x_move, self.timer, "page:", self.page)
+            print("moving?", self.x_move, self.timer, "page:", self.page)
         
         # constrain to legit pages
         if self.page < 1:
@@ -249,8 +249,31 @@ class TrainingManual(object):
                 self.x_move = value
             #print(axis, value, self.x_move)
 
-    # TODO: will need to handle keys
+    def handle_key_down(self, key):
+        if key in (keys.A, keys.LEFT):
+            self.x_move = -1
+            self.timer = 0
+        
+        if key in (keys.D, keys.RIGHT):
+            self.x_move = 1
+            self.timer = 0
+            
+        if key in (keys.SPACE, keys.RSHIFT):
+            # button zero
+            self.game.show_training_manual = False
+            self.level_end = False
+            self.level_end_text = []
 
+    def handle_key_up(self, key):
+        print("Manual key up:", key)
+        if key in (keys.A, keys.LEFT):
+            self.x_move = 0
+            self.timer = 1
+        
+        if key in (keys.D, keys.RIGHT):
+            self.x_move = 0
+            self.timer = 1
+            
 class DummyGame(object):
     
     def __init__(self):

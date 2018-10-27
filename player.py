@@ -141,75 +141,84 @@ class Player(Actor):
         else:
             return (me[0] + 1, me[1] + 1)
     
+    def pick_up(self):
+        if self.carrying:
+            # prepare to put down: display a highlight where it'll go,
+            # and put it down when the button is released
+            self.putting_down = self.pick_up_space()
+            return
+            
+        # try to pick up
+        my_grid = self.pick_up_space()
+        machine = self.game.map.get(my_grid, None)
+        if machine is None:
+            # nope, nothing there
+            return
+        elif (machine.name == 'ore_chute' or
+            machine.name == 'loading_dock'):
+            pass # no pick up
+        elif machine and machine.name == 'training_manual_kiosk':
+            print("Training Manual!")
+            self.game.show_training_manual = True
+        else:
+            #print("Picking up", machine)
+            machine.carried = True
+            self.carrying = machine
+            if getattr(machine, 'multimachine', None):
+                # need to disable the multimachine
+                mm = machine.multimachine
+                mm.switch_off()
+                self.game.multimachines.remove(mm)
+                del mm
+            del self.game.map[my_grid]   # dangerous! 
+    
+    def put_down(self):
+        my_grid = self.pick_up_space()
+        machine = self.game.map.get(my_grid, None)
+        if machine:
+            # nope, there's something there
+            self.putting_down = False
+            pass
+        else:
+            # Check which direction the player / player's joystick is facing,
+            # and make the conveyor face that way.
+            my_machine = self.carrying
+            self.game.map[my_grid] = my_machine
+            my_machine.grid_x = my_grid[0]
+            my_machine.grid_y = my_grid[1]
+            my_machine.x, my_machine.y = self.game.convert_from_grid(*my_grid)
+            my_machine.carried = False
+            my_machine.direction = self.player_facing()
+            if hasattr(my_machine, 'on_put_down'):
+                my_machine.on_put_down()
+            #print("Putting down", my_machine, "at", my_grid, "facing", my_machine.direction)
+            self.carrying = False
+            self.putting_down = False
+    
+    def do_a_debug(self):
+        # debug the conveyors
+        my_grid = self.pick_up_space()
+        machine = self.game.map.get(my_grid, None)
+        if machine:
+            print(machine)
+        mm = getattr(machine, 'multimachine', None)
+        if mm:
+            print(mm)
+            print("  Production:", mm.input_machines, mm.output_machines)
+        print ("Multimachines in game: ", self.game.multimachines)
+    
+    
     def handle_button_down(self, button):
         #print("Player {} pushed button {}".format(self, button))
         if button == joybutton.ZERO:
-            # pick up/put down the thing
-            if self.carrying:
-                # prepare to put down: display a highlight where it'll go,
-                # and put it down when the button is released
-                self.putting_down = self.pick_up_space()
-            else:
-                # try to pick up
-                my_grid = self.pick_up_space()
-                machine = self.game.map.get(my_grid, None)
-                if machine is None:
-                    # nope, nothing there
-                    return
-                elif (machine.name == 'ore_chute' or
-                    machine.name == 'loading_dock'):
-                    pass # no pick up
-                elif machine and machine.name == 'training_manual_kiosk':
-                    print("Training Manual!")
-                    self.game.show_training_manual = True
-                else:
-                    #print("Picking up", machine)
-                    machine.carried = True
-                    self.carrying = machine
-                    if getattr(machine, 'multimachine', None):
-                        # need to disable the multimachine
-                        mm = machine.multimachine
-                        mm.switch_off()
-                        self.game.multimachines.remove(mm)
-                        del mm
-                    del self.game.map[my_grid]   # dangerous! 
-        
+            self.pick_up()
+            
         if button == joybutton.TWO:
-            # debug the conveyors
-            my_grid = self.pick_up_space()
-            machine = self.game.map.get(my_grid, None)
-            if machine:
-                print(machine)
-            mm = getattr(machine, 'multimachine', None)
-            if mm:
-                print(mm)
-                print("  Production:", mm.input_machines, mm.output_machines)
-            print ("Multimachines in game: ", self.game.multimachines)
+            self.do_a_debug()
             
     def handle_button_up(self, button):
         if button == joybutton.ZERO and self.carrying and self.putting_down:
-            my_grid = self.pick_up_space()
-            machine = self.game.map.get(my_grid, None)
-            if machine:
-                # nope, there's something there
-                self.putting_down = False
-                pass
-            else:
-                # Check which direction the player / player's joystick is facing,
-                # and make the conveyor face that way.
-                my_machine = self.carrying
-                self.game.map[my_grid] = my_machine
-                my_machine.grid_x = my_grid[0]
-                my_machine.grid_y = my_grid[1]
-                my_machine.x, my_machine.y = self.game.convert_from_grid(*my_grid)
-                my_machine.carried = False
-                my_machine.direction = self.player_facing()
-                if hasattr(my_machine, 'on_put_down'):
-                    my_machine.on_put_down()
-                #print("Putting down", my_machine, "at", my_grid, "facing", my_machine.direction)
-                self.carrying = False
-                self.putting_down = False
-
+            self.put_down()
     
     def handle_axis(self, axis, value):
         #print("Player {} moved axis {}: {}".format(self, axis, value))
@@ -219,4 +228,49 @@ class Player(Actor):
         if axis == axis.Y:
             self.speed[1] = value * 7
             self.last_y = value
+    
+    
+    def handle_key_down(self, key):
+        if key in (keys.SPACE, keys.RSHIFT):
+            # button zero
+            self.pick_up()
+        
+        if key in (keys.RETURN, keys.LALT):
+            self.do_a_debug()
+        
+        if key in (keys.W, keys.UP):
+            self.speed[1] = -7
+            self.last_y = -7
+        
+        if key in (keys.S, keys.DOWN):
+            self.speed[1] = 7
+            self.last_y = 7
             
+        if key in (keys.A, keys.LEFT):
+            self.speed[0] = -7
+            self.last_x = -7
+        
+        if key in (keys.D, keys.RIGHT):
+            self.speed[0] = 7
+            self.last_x = 7
+
+    def handle_key_up(self, key):
+        if key in (keys.SPACE, keys.RSHIFT) and self.carrying and self.putting_down:
+            # button zero
+            self.put_down()
+        
+        if key in (keys.W, keys.UP):
+            self.speed[1] = 0
+            self.last_y = 0
+        
+        if key in (keys.S, keys.DOWN):
+            self.speed[1] = 0
+            self.last_y = 0
+            
+        if key in (keys.A, keys.LEFT):
+            self.speed[0] = 0
+            self.last_x = 0
+        
+        if key in (keys.D, keys.RIGHT):
+            self.speed[0] = 0
+            self.last_x = 0

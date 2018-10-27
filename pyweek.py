@@ -94,7 +94,7 @@ class Game(object):
             while (x, y) in self.map:
                 y = random.randint(2, self.GRID_HEIGHT - 2)
             self.map[(x, y)] = LoadingDock(
-                self, x, y, each_product, loading_time=5, anchor=(0,70))
+                self, x, y, each_product, loading_time=3, anchor=(0,70))
         
         print("Adding machines...")
         # place machines randomly
@@ -222,7 +222,6 @@ class Game(object):
 game = Game(HEIGHT, WIDTH)
 print("Game initialised")
 
-
 def draw():
     screen.clear()
     
@@ -277,15 +276,16 @@ def update(dt):
 def on_joy_button_down(joy, button):
     #print("Mu button down:", joy, button)
     # hack to get around GCN adapter
-    player_no = int(joy) - 4 + 1
+    player_no = int(joy) % 4 + 1
     
     if game.show_training_manual:
         # send buttons and axis to the training manual instead
         game.training_manual.handle_button_down(button)
         return
         
-    # TODO: hardcoded buttons - will change per controller
-    if button in (joybutton.SIX, joybutton.SEVEN):
+    # Any button larger than four will do. Start button will
+    # change with different controllers.
+    if button > joybutton.FOUR:
         if player_no not in game.players:
             #spawn a new player
             game.players[player_no] = Player(game, player_no)
@@ -301,7 +301,7 @@ def on_joy_button_down(joy, button):
 def on_joy_button_up(joy, button):
     #print("Mu button down:", joy, button)
     # hack to get around GCN adapter
-    player_no = int(joy) - 4 + 1
+    player_no = int(joy) % 4 + 1
     
     if game.show_training_manual:
         # send buttons and axis to the training manual instead
@@ -327,13 +327,34 @@ def on_joy_axis_motion(joy, axis, value):
         return
     
     # hack to get around GCN adapter
-    player_no = int(joy) - 4 + 1
+    player_no = int(joy) % 4 + 1
     if player_no in game.players:
         game.players[player_no].handle_axis(axis, sanitise_axis(value))
 
 
 def on_key_down(key):
     print(key)
+    
+    # keys for players 1 and 2 (split keyboard)
+    # P1: WASD + space/alt,
+    if key in (keys.W, keys.A, keys.S, keys.D, 
+               keys.SPACE, keys.LALT):
+        if key == keys.SPACE and 1 not in game.players:
+            game.players[1] = Player(game, 1)
+        if game.show_training_manual:
+            game.training_manual.handle_key_down(key)
+        elif 1 in game.players:
+            game.players[1].handle_key_down(key)
+    
+    # P2: arrows + left shift/enter
+    if key in (keys.UP, keys.LEFT, keys.DOWN, keys.RIGHT, 
+               keys.RSHIFT, keys.RETURN):
+        if key == keys.RSHIFT and 2 not in game.players:
+            game.players[2] = Player(game, 2)
+        if game.show_training_manual:
+            game.training_manual.handle_key_down(key)
+        elif 2 in game.players:
+            game.players[2].handle_key_down(key)
     
     if key == keys.ESCAPE:
         if game.show_training_manual:
@@ -373,9 +394,24 @@ def on_key_down(key):
         for k in game.products_required:
             game.products_required[k] -= 1
 
-    # TODO: add keys for players 1 and 2 (split keyboard)
+def on_key_up(key):
+    # keys for players 1 and 2 (split keyboard)
     # P1: WASD + space/alt,
+    if key in (keys.W, keys.A, keys.S, keys.D, 
+               keys.SPACE, keys.LALT):
+        if game.show_training_manual:
+            game.training_manual.handle_key_up(key)
+        elif 1 in game.players:
+            game.players[1].handle_key_up(key)
+    
     # P2: arrows + left shift/enter
+    if key in (keys.UP, keys.LEFT, keys.DOWN, keys.RIGHT, 
+               keys.RSHIFT, keys.RETURN):
+        if game.show_training_manual:
+            game.training_manual.handle_key_up(key)
+        elif 2 in game.players:
+            game.players[2].handle_key_up(key)
+
 
 def on_mouse_down(pos, button):
     print("Mouse button clicked!")
